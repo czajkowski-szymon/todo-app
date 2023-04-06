@@ -1,0 +1,221 @@
+{
+  "tests": [
+    {
+      "name": "NonExistingEndpointTest",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.NonExistingEndpointTest",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "UserEndpointTest - shouldReturnBadRequestStatus",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.UserEndpointTest#shouldReturnBadRequestStatus",
+      "output": "",
+      "comparison": "exact",
+      "points": 60
+    },
+    {
+      "name": "UserEndpointTest - shouldReturnCreatedStatus",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.UserEndpointTest#shouldReturnCreatedStatus",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusIncorrectTaskPathGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusIncorrectTaskPathGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusIncorrectTaskPathPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusIncorrectTaskPathPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusIncorrectTaskPathDelete",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusIncorrectTaskPathDelete",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusIncorrectTaskBodyPost",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusIncorrectTaskBodyPost",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusIncorrectTaskBodyPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusIncorrectTaskBodyPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersPost",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersPost",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersDelete",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnBadRequestStatusForIncorrectAuthenticationHeadersDelete",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongUsernameGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongUsernameGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongUsernamePost",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongUsernamePost",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongUsernamePut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongUsernamePut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongUsername",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongUsername",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongPasswordGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongPasswordGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongPasswordPost",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongPasswordPost",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongPasswordPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongPasswordPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnUnauthorizedStatusWrongPasswordDelete",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnUnauthorizedStatusWrongPasswordDelete",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldCreateTask",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldCreateTask",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnAllTasksForUser",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnAllTasksForUser",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnTask",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnTask",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnNotFoundGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnNotFoundGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnNotFoundPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnNotFoundPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnNotFoundDelete",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnNotFoundDelete",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnForbiddenStatusGet",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnForbiddenStatusGet",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnForbiddenStatusPut",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnForbiddenStatusPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldReturnForbiddenStatusDelete",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldReturnForbiddenStatusPut",
+      "output": "",
+      "comparison": "exact",
+      "points": 10
+    },
+    {
+      "name": "TaskEndpointTest - shouldUpdateTask",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldUpdateTask",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    },
+    {
+      "name": "TaskEndpointTest - shouldDeleteTask",
+      "run": "mvn -B --quiet test -Dtest=efs.task.todoapp.autograding.TaskEndpointTest#shouldDeleteTask",
+      "output": "",
+      "comparison": "exact",
+      "points": 100
+    }
+  ]
+}
