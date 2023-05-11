@@ -1,7 +1,14 @@
 package efs.task.todoapp.service;
 
+import efs.task.todoapp.helpers.Responses;
+import efs.task.todoapp.json.JsonSerializer;
+import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
+import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.repository.UserRepository;
+
+import java.util.List;
+import java.util.UUID;
 
 public class ToDoService {
     private final UserRepository userRepository;
@@ -10,5 +17,32 @@ public class ToDoService {
     public ToDoService(UserRepository userRepository, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
+    }
+
+    public String addUser(String userJson) {
+        UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+        return userRepository.save(userEntity);
+    }
+
+    public void addTask() {
+        // adding task...
+    }
+
+    public List<String> getTasks() {
+        // retrieving list of tasks
+        return null;
+    }
+
+    public TaskEntity getTaskById(UUID id) {
+        // retrieving task with given ID
+        return null;
+    }
+
+    public void updateTask(UUID id) {
+        // updating task with given ID
+    }
+
+    public void deleteTask(UUID id) {
+        // deleting task with given ID
     }
 }

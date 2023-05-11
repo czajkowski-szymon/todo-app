@@ -7,11 +7,13 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.IOException;
+
 public class ToDoServerExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     private HttpServer server;
 
     @Override
-    public void beforeEach(ExtensionContext extensionContext) {
+    public void beforeEach(ExtensionContext extensionContext) throws IOException {
         var todoApplication = new ToDoApplication();
         server = todoApplication.createServer();
         server.start();
