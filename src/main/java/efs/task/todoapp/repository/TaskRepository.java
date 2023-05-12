@@ -1,14 +1,19 @@
 package efs.task.todoapp.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class TaskRepository implements Repository<UUID, TaskEntity> {
+    Map<UUID, TaskEntity> tasks;
+
+    public TaskRepository() {
+        tasks = new HashMap<>();
+    }
+
     @Override
     public UUID save(TaskEntity taskEntity) {
-        return null;
+        UUID id = UUID.randomUUID();
+        return id;
     }
 
     @Override

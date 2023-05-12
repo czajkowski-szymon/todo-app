@@ -13,14 +13,19 @@ public class UserRepository implements Repository<String, UserEntity> {
         users = new HashMap<>();
     }
 
+    public Map<String, UserEntity> getUsers() {
+        return users;
+    }
+
     @Override
     public String save(UserEntity userEntity) {
-        AuthEntity auth = new AuthEntity(userEntity.getUsername(), userEntity.getPassword());
-        if (users.containsKey(auth.getId())) {
+        String auth = Base64.getEncoder().encodeToString(userEntity.getUsername().getBytes()) + ":" +
+                Base64.getEncoder().encodeToString(userEntity.getUsername().getBytes());
+        if (users.containsValue(userEntity)) {
             throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
         }
-        users.put(auth.getId(), userEntity);
-        return JsonSerializer.fromObjectToJson(auth);
+        users.put(auth, userEntity);
+        return auth;
     }
 
     @Override
@@ -41,5 +46,10 @@ public class UserRepository implements Repository<String, UserEntity> {
     @Override
     public boolean delete(String s) {
         return false;
+    }
+
+    private String encode(String username, String password) {
+        return Base64.getEncoder().encodeToString(username.getBytes()) + ":" +
+                Base64.getEncoder().encodeToString(password.getBytes());
     }
 }

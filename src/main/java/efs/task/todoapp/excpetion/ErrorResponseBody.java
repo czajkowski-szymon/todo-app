@@ -2,19 +2,19 @@ package efs.task.todoapp.excpetion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ResponseBodyException {
+public class ErrorResponseBody {
     @JsonProperty("status")
     private int statusCode;
 
     @JsonProperty("message")
     private String message;
 
-    public ResponseBodyException(int statusCode, String message) {
+    public ErrorResponseBody(int statusCode, String message) {
         this.statusCode = statusCode;
         this.message = message;
     }
 
-    public ResponseBodyException() {
+    public ErrorResponseBody() {
     }
 
     public int getStatusCode() {

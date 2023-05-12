@@ -1,5 +1,6 @@
 package efs.task.todoapp.service;
 
+import efs.task.todoapp.excpetion.BadUserOrPasswordException;
 import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
 import efs.task.todoapp.repository.UserEntity;
@@ -21,8 +22,11 @@ public class ToDoService {
         return userRepository.save(userEntity);
     }
 
-    public void addTask() {
-        // adding task...
+    public String addTask(TaskEntity taskEntity) {
+        if (!userRepository.getUsers().containsKey(taskEntity.getAuth())) {
+            throw new BadUserOrPasswordException("Bledna nazwa uzytkownika lub haslo");
+        }
+        return taskRepository.save(taskEntity).toString();
     }
 
     public List<String> getTasks() {

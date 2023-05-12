@@ -8,6 +8,7 @@ import java.util.UUID;
 
 
 public class TaskEntity {
+    private String auth;
     @JsonProperty("description")
     private String taskDescription;
     @JsonProperty("due")
@@ -20,6 +21,14 @@ public class TaskEntity {
     }
 
     public TaskEntity() {
+    }
+
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
     }
 
     public String getTaskDescription() {
