@@ -1,7 +1,5 @@
 package efs.task.todoapp.service;
 
-import efs.task.todoapp.helpers.Responses;
-import efs.task.todoapp.json.JsonSerializer;
 import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
 import efs.task.todoapp.repository.UserEntity;
@@ -19,8 +17,7 @@ public class ToDoService {
         this.taskRepository = taskRepository;
     }
 
-    public String addUser(String userJson) {
-        UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+    public String addUser(UserEntity userEntity) {
         return userRepository.save(userEntity);
     }
 

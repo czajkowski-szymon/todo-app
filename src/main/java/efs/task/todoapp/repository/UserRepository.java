@@ -1,7 +1,7 @@
 package efs.task.todoapp.repository;
 
-import efs.task.todoapp.helpers.AuthCoding;
-import efs.task.todoapp.helpers.Responses;
+import efs.task.todoapp.excpetion.UserAlreadyAddedException;
+import efs.task.todoapp.json.JsonSerializer;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -15,12 +15,12 @@ public class UserRepository implements Repository<String, UserEntity> {
 
     @Override
     public String save(UserEntity userEntity) {
-        String auth = AuthCoding.code(userEntity.getUsername(), userEntity.getPassword());
-        if (users.containsKey(auth)) {
-            return Responses.USER_EXISTS;
+        AuthEntity auth = new AuthEntity(userEntity.getUsername(), userEntity.getPassword());
+        if (users.containsKey(auth.getId())) {
+            throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
         }
-        users.put(auth, userEntity);
-        return auth;
+        users.put(auth.getId(), userEntity);
+        return JsonSerializer.fromObjectToJson(auth);
     }
 
     @Override

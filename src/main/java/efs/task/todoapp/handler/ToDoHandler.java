@@ -2,9 +2,13 @@ package efs.task.todoapp.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import efs.task.todoapp.excpetion.BadJSONException;
+import efs.task.todoapp.excpetion.ResponseBodyException;
+import efs.task.todoapp.excpetion.UserAlreadyAddedException;
 import efs.task.todoapp.helpers.HttpStatus;
-import efs.task.todoapp.helpers.Responses;
+import efs.task.todoapp.json.JsonSerializer;
 import efs.task.todoapp.repository.TaskEntity;
+import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.service.ToDoService;
 
 import java.io.IOException;
@@ -58,18 +62,20 @@ public class ToDoHandler implements HttpHandler {
     }
 
     private String addUser(String userJson) {
-        if (userJson.length() == 0) {
+        try {
+            UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+            try {
+                statusCode = HttpStatus.CREATED;
+                return toDoService.addUser(userEntity);
+            } catch (UserAlreadyAddedException e) {
+                statusCode = HttpStatus.CONFLICT;
+                return JsonSerializer.fromObjectToJson(
+                        new ResponseBodyException(HttpStatus.CONFLICT.getStatusCode(), e.getMessage()));
+            }
+        } catch (BadJSONException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return Responses.BAD_REQUEST_BODY;
-        }
-
-        String result = toDoService.addUser(userJson);
-        if (result.equals(Responses.USER_EXISTS)) {
-            statusCode = HttpStatus.CONFLICT;
-            return Responses.USER_EXISTS;
-        } else {
-            statusCode = HttpStatus.CREATED;
-            return Responses.USER_ADDED;
+            return JsonSerializer.fromObjectToJson(
+                    new ResponseBodyException(HttpStatus.BAD_REQUEST.getStatusCode(), e.getMessage()));
         }
     }
 
