@@ -15,7 +15,6 @@ import efs.task.todoapp.service.ToDoService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.UUID;
 
 public class ToDoHandler implements HttpHandler {
@@ -31,10 +30,6 @@ public class ToDoHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
         String path = httpExchange.getRequestURI().getPath();
-        httpExchange.getResponseHeaders().set("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD");
 
         if (method.equals("OPTIONS") && path.startsWith("/todo/")) {
             statusCode = HttpStatus.OK;
@@ -46,14 +41,14 @@ public class ToDoHandler implements HttpHandler {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Headers headers = httpExchange.getRequestHeaders();
             String auth = headers.getFirst("auth");
-            System.out.println(auth);
             response = addTask(taskJson, auth);
         } else if (method.equals("GET") && path.equals("/todo/task")) {
-            response = "haha";
-            statusCode = HttpStatus.OK;
+            Headers headers = httpExchange.getRequestHeaders();
+            String auth = headers.getFirst("auth");
+            response = getTasks(auth);
         } else if (method.equals("GET") && path.startsWith("/todo/task/")) {
-            UUID id = UUID.fromString(path.split("/todo/task/")[1]);
-            getTaskById(id);
+            UUID uuid = UUID.fromString(path.split("/todo/task/")[1]);
+            response = getTaskById(uuid);
             statusCode = HttpStatus.OK;
         } else if (method.equals("PUT") && path.startsWith("/todo/task/")) {
             UUID id = UUID.fromString(path.split("/todo/task/")[1]);
@@ -68,6 +63,10 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.NOT_FOUND;
         }
 
+        httpExchange.getResponseHeaders().set("Content-Type", "application/json");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "auth, Content-Type, Accept, X-Requested-With");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD");
         httpExchange.sendResponseHeaders(statusCode.getStatusCode(), response.getBytes().length);
         httpExchange.getResponseBody().write(response.getBytes());
         httpExchange.close();
@@ -115,12 +114,12 @@ public class ToDoHandler implements HttpHandler {
         }
     }
 
-    private List<String> getTasks() {
-        return toDoService.getTasks();
+    private String getTasks(String auth) {
+        return JsonSerializer.fromObjectToJson(toDoService.getTasks(auth));
     }
 
-    private TaskEntity getTaskById(UUID id) {
-        return getTaskById(id);
+    private String getTaskById(UUID uuid) {
+        return JsonSerializer.fromObjectToJson(toDoService.getTaskById(uuid));
     }
 
     private void updateTask(UUID id) {

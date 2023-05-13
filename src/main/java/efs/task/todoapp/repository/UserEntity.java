@@ -2,7 +2,7 @@ package efs.task.todoapp.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Objects;
+import java.util.*;
 
 public class UserEntity {
     @JsonProperty("username")
@@ -11,9 +11,12 @@ public class UserEntity {
     @JsonProperty("password")
     private String password;
 
+    private Map<UUID, TaskEntity> tasks;
+
     public UserEntity(String username, String password) {
         this.username = username;
         this.password = password;
+        tasks = new HashMap<>();
     }
 
     public UserEntity() {

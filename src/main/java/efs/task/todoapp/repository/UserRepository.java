@@ -19,8 +19,7 @@ public class UserRepository implements Repository<String, UserEntity> {
 
     @Override
     public String save(UserEntity userEntity) {
-        String auth = Base64.getEncoder().encodeToString(userEntity.getUsername().getBytes()) + ":" +
-                Base64.getEncoder().encodeToString(userEntity.getUsername().getBytes());
+        String auth = encode(userEntity.getUsername(), userEntity.getPassword());
         if (users.containsValue(userEntity)) {
             throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
         }

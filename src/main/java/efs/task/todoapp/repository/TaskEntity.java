@@ -1,16 +1,21 @@
 package efs.task.todoapp.repository;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.UUID;
 
-
 public class TaskEntity {
+    @JsonIgnore
     private String auth;
+
+    @JsonProperty("id")
+    private UUID uuid;
+
     @JsonProperty("description")
     private String taskDescription;
+
     @JsonProperty("due")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String dueDate;
@@ -29,6 +34,14 @@ public class TaskEntity {
 
     public void setAuth(String auth) {
         this.auth = auth;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getTaskDescription() {

@@ -8,6 +8,7 @@ import efs.task.todoapp.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class ToDoService {
     private final UserRepository userRepository;
@@ -29,14 +30,13 @@ public class ToDoService {
         return taskRepository.save(taskEntity).toString();
     }
 
-    public List<String> getTasks() {
-        // retrieving list of tasks
-        return null;
+    public List<TaskEntity> getTasks(String auth) {
+        Predicate<TaskEntity> condition = task -> task.getAuth().equals(auth);
+        return taskRepository.query(condition);
     }
 
-    public TaskEntity getTaskById(UUID id) {
-        // retrieving task with given ID
-        return null;
+    public TaskEntity getTaskById(UUID uuid) {
+        return taskRepository.query(uuid);
     }
 
     public void updateTask(UUID id) {
