@@ -35,11 +35,19 @@ public class TaskRepository implements Repository<UUID, TaskEntity> {
 
     @Override
     public TaskEntity update(UUID uuid, TaskEntity taskEntity) {
-        return null;
+        tasks.stream()
+                .filter(task -> task.getUuid().equals(uuid))
+                .findFirst().orElseThrow()
+                .update(taskEntity.getTaskDescription(), taskEntity.getDueDate());
+        return tasks.stream()
+                .filter(task -> task.getUuid().equals(uuid))
+                .findFirst().orElseThrow();
     }
 
     @Override
     public boolean delete(UUID uuid) {
-        return false;
+        return tasks.remove(tasks.stream()
+                .filter(task -> task.getUuid().equals(uuid))
+                .findFirst().orElseThrow());
     }
 }

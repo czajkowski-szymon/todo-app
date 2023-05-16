@@ -39,8 +39,7 @@ public class ToDoHandler implements HttpHandler {
             response = addUser(userJson);
         } else if (method.equals("POST") && path.equals("/todo/task")) {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Headers headers = httpExchange.getRequestHeaders();
-            String auth = headers.getFirst("auth");
+            String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = addTask(taskJson, auth);
         } else if (method.equals("GET") && path.equals("/todo/task")) {
             Headers headers = httpExchange.getRequestHeaders();
@@ -51,13 +50,14 @@ public class ToDoHandler implements HttpHandler {
             response = getTaskById(uuid);
             statusCode = HttpStatus.OK;
         } else if (method.equals("PUT") && path.startsWith("/todo/task/")) {
-            UUID id = UUID.fromString(path.split("/todo/task/")[1]);
-            updateTask(id);
+            UUID uuid = UUID.fromString(path.split("/todo/task/")[1]);
+            String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            String auth = httpExchange.getRequestHeaders().getFirst("auth");
+            response = updateTask(taskJson, auth, uuid);
             statusCode = HttpStatus.OK;
         } else if (method.equals("DELETE") && path.startsWith("/todo/task/")) {
-            UUID id = UUID.fromString(path.split("/todo/task/")[1]);
-            deleteTask(id);
-            statusCode = HttpStatus.OK;
+            UUID uuid = UUID.fromString(path.split("/todo/task/")[1]);
+            response = deleteTask(uuid);
         } else {
             response = "Page not found";
             statusCode = HttpStatus.NOT_FOUND;
@@ -74,20 +74,29 @@ public class ToDoHandler implements HttpHandler {
 
     private String addUser(String userJson) {
         try {
-            UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+            UserEntity userEntity = createUser(userJson);
             try {
                 statusCode = HttpStatus.CREATED;
-                return "{\"auth\": \"" + toDoService.addUser(userEntity) + "\"}";
+                return toDoService.addUser(userEntity);
             } catch (UserAlreadyAddedException e) {
                 statusCode = HttpStatus.CONFLICT;
-                return JsonSerializer.fromObjectToJson(
-                        new ErrorResponseBody(HttpStatus.CONFLICT.getStatusCode(), e.getMessage()));
+                return e.getMessage();
             }
         } catch (BadJsonException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(
-                    new ErrorResponseBody(HttpStatus.BAD_REQUEST.getStatusCode(), e.getMessage()));
+            return e.getMessage();
         }
+    }
+
+    private UserEntity createUser(String userJson) {
+        UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+        boolean isUsernameNotValid = userEntity.getUsername() == null || userEntity.getUsername().isEmpty();
+        boolean isPasswordNotValid = userEntity.getPassword() == null || userEntity.getPassword().isEmpty();
+        if (isPasswordNotValid || isUsernameNotValid) {
+            statusCode = HttpStatus.BAD_REQUEST;
+            throw new BadJsonException("Brak wymaganej tresci");
+        }
+        return userEntity;
     }
 
     private String addTask(String taskJson, String auth) {
@@ -122,11 +131,19 @@ public class ToDoHandler implements HttpHandler {
         return JsonSerializer.fromObjectToJson(toDoService.getTaskById(uuid));
     }
 
-    private void updateTask(UUID id) {
-        toDoService.updateTask(id);
+    private String updateTask(String taskJson, String auth, UUID uuid) {
+        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        taskEntity.setAuth(auth);
+        return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskEntity, uuid));
     }
 
-    private void deleteTask(UUID id) {
-        toDoService.deleteTask(id);
+    private String deleteTask(UUID uuid) {
+        if (toDoService.deleteTask(uuid)){
+            statusCode = HttpStatus.OK;
+            return "Usunieto";
+        } else {
+            statusCode = HttpStatus.BAD_REQUEST;
+            return "Nie usunieto";
+        }
     }
 }

@@ -60,6 +60,11 @@ public class TaskEntity {
         this.dueDate = dueDate;
     }
 
+    public void update(String taskDescription, String dueDate) {
+        setTaskDescription(taskDescription);
+        setDueDate(dueDate);
+    }
+
     @Override
     public String toString() {
         return "TaskEntity{" +

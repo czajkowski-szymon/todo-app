@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,13 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @ExtendWith(ToDoServerExtension.class)
-public class AddUserEndpointTest {
+public class UserEndpointTest {
     public static final int CREATED = 201;
     public static final int BAD_REQUEST = 400;
     public static final int CONFLICT = 409;
     public static final String TODO_APP_PATH = "http://localhost:8080/todo/";
-    public static final String USER_JSON = "{\"username\": \"janKowalski\", \"password\": \"haslomaslo\"}";
-    public static final String BAD_JSON = "{\"name\": \"janKowalski\", \"word\": \"haslomaslo\"}";
+    public static final String USER_JSON = "{\"username\": \"janKowalski\", \"password\": \"haslo\"}";
 
     private HttpClient httpClient;
 
@@ -49,8 +48,8 @@ public class AddUserEndpointTest {
     }
 
     @ParameterizedTest(name = "input {0}")
-    @ValueSource(strings = {"{}", "{  }", BAD_JSON})
-    public void shouldReturnBadRequestStatusForBadJson(String input) throws IOException, InterruptedException {
+    @CsvFileSource(resources = {"/badjson.csv"})
+    public void shouldReturnBadRequestStatusForBadJsonCsv(String input) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TODO_APP_PATH + "user"))

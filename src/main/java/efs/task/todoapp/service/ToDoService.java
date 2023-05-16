@@ -39,11 +39,11 @@ public class ToDoService {
         return taskRepository.query(uuid);
     }
 
-    public void updateTask(UUID id) {
-        // updating task with given ID
+    public TaskEntity updateTask(TaskEntity taskEntity, UUID uuid) {
+        return taskRepository.update(uuid, taskEntity);
     }
 
-    public void deleteTask(UUID id) {
-        // deleting task with given ID
+    public boolean deleteTask(UUID id) {
+        return taskRepository.delete(id);
     }
 }
