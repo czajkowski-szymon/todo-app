@@ -5,49 +5,39 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class TaskRepository implements Repository<UUID, TaskEntity> {
-    List<TaskEntity> tasks;
+    Map<UUID, TaskEntity> tasks;
 
     public TaskRepository() {
-        tasks = new ArrayList<>();
+        tasks = new HashMap<>();
     }
 
     @Override
     public UUID save(TaskEntity taskEntity) {
         UUID uuid = UUID.randomUUID();
         taskEntity.setUuid(uuid);
-        tasks.add(taskEntity);
+        tasks.put(uuid, taskEntity);
         return uuid;
     }
 
     @Override
     public TaskEntity query(UUID uuid) {
-        return tasks.stream()
-                .filter(task -> task.getUuid().equals(uuid))
-                .findFirst().orElseThrow();
+        return null;
     }
 
     @Override
     public List<TaskEntity> query(Predicate<TaskEntity> condition) {
-        return tasks.stream()
+        return tasks.values().stream()
                 .filter(condition)
                 .collect(Collectors.toList());
     }
 
     @Override
     public TaskEntity update(UUID uuid, TaskEntity taskEntity) {
-        tasks.stream()
-                .filter(task -> task.getUuid().equals(uuid))
-                .findFirst().orElseThrow()
-                .update(taskEntity.getTaskDescription(), taskEntity.getDueDate());
-        return tasks.stream()
-                .filter(task -> task.getUuid().equals(uuid))
-                .findFirst().orElseThrow();
+        return null;
     }
 
     @Override
     public boolean delete(UUID uuid) {
-        return tasks.remove(tasks.stream()
-                .filter(task -> task.getUuid().equals(uuid))
-                .findFirst().orElseThrow());
+        return false;
     }
 }

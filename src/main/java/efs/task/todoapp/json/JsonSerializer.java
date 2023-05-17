@@ -1,9 +1,8 @@
 package efs.task.todoapp.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import efs.task.todoapp.excpetion.BadJsonException;
+import efs.task.todoapp.excpetion.BadRequestException;
 
 public class JsonSerializer {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -13,7 +12,7 @@ public class JsonSerializer {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            throw new BadJsonException("Brak wymaganej tresci");
+            throw new BadRequestException("Brak wymaganej tresci");
         }
     }
 
@@ -21,7 +20,7 @@ public class JsonSerializer {
         try {
             return objectMapper.readValue(json, result);
         } catch (JsonProcessingException e) {
-            throw new BadJsonException("Brak wymaganej tresci");
+            throw new BadRequestException("Brak wymaganej tresci");
         }
     }
 }

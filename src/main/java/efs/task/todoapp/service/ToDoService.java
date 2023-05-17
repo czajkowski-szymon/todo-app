@@ -1,6 +1,7 @@
 package efs.task.todoapp.service;
 
 import efs.task.todoapp.excpetion.BadUserOrPasswordException;
+import efs.task.todoapp.json.JsonSerializer;
 import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
 import efs.task.todoapp.repository.UserEntity;
@@ -23,16 +24,16 @@ public class ToDoService {
         return userRepository.save(userEntity);
     }
 
-    public String addTask(TaskEntity taskEntity) {
+    public UUID addTask(TaskEntity taskEntity) {
         if (!userRepository.getUsers().containsKey(taskEntity.getAuth())) {
-            throw new BadUserOrPasswordException("Bledna nazwa uzytkownika lub haslo");
+            System.out.println("Brak uzytkownika lub bledne haslo");
+            throw new BadUserOrPasswordException("Brak uzytkownika lub bledne haslo");
         }
-        return taskRepository.save(taskEntity).toString();
+        return taskRepository.save(taskEntity);
     }
 
     public List<TaskEntity> getTasks(String auth) {
-        Predicate<TaskEntity> condition = task -> task.getAuth().equals(auth);
-        return taskRepository.query(condition);
+        return taskRepository.query(task -> task.getAuth().equals(auth));
     }
 
     public TaskEntity getTaskById(UUID uuid) {

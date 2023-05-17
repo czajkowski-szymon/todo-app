@@ -1,5 +1,6 @@
 package efs.task.todoapp;
 
+import efs.task.todoapp.helpers.HttpStatus;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,16 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(ToDoServerExtension.class)
 public class UserEndpointTest {
-    public static final int CREATED = 201;
-    public static final int BAD_REQUEST = 400;
-    public static final int CONFLICT = 409;
-    public static final String TODO_APP_PATH = "http://localhost:8080/todo/";
-    public static final String USER_JSON = "{\"username\": \"janKowalski\", \"password\": \"haslo\"}";
+    public static final int CREATED = HttpStatus.CREATED.value();
+    public static final int BAD_REQUEST = HttpStatus.BAD_REQUEST.value();
+    public static final int CONFLICT = HttpStatus.CONFLICT.value();
+    public static final String TODO_APP_PATH = "http://localhost:8080/todo/user";
+    public static final String USER_JSON = "{\"username\": \"janKowalski\", \"password\": \"am!sK#123\"}";
 
     private HttpClient httpClient;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         httpClient = HttpClient.newHttpClient();
     }
 
@@ -36,7 +37,7 @@ public class UserEndpointTest {
     public void shouldReturnCreatedStatusForAddingUser() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH + "user"))
+                .uri(URI.create(TODO_APP_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
                 .build();
 
@@ -48,11 +49,11 @@ public class UserEndpointTest {
     }
 
     @ParameterizedTest(name = "input {0}")
-    @CsvFileSource(resources = {"/badjson.csv"})
-    public void shouldReturnBadRequestStatusForBadJsonCsv(String input) throws IOException, InterruptedException {
+    @CsvFileSource(resources = {"/badjsonuser.csv"})
+    public void shouldReturnBadRequestStatusForBadUserBodyCsv(String input) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH + "user"))
+                .uri(URI.create(TODO_APP_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(input))
                 .build();
 
@@ -67,12 +68,12 @@ public class UserEndpointTest {
     public void shouldReturnConflictForAlreadyAddedUser() throws IOException, InterruptedException {
         // given
         var httpRequest1 = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH + "user"))
+                .uri(URI.create(TODO_APP_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
                 .build();
 
         var httpRequest2 = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH + "user"))
+                .uri(URI.create(TODO_APP_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
                 .build();
 
