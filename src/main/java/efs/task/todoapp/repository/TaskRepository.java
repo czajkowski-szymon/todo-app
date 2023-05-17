@@ -11,6 +11,10 @@ public class TaskRepository implements Repository<UUID, TaskEntity> {
         tasks = new HashMap<>();
     }
 
+    public Map<UUID, TaskEntity> getTasks() {
+        return tasks;
+    }
+
     @Override
     public UUID save(TaskEntity taskEntity) {
         UUID uuid = UUID.randomUUID();
@@ -21,7 +25,7 @@ public class TaskRepository implements Repository<UUID, TaskEntity> {
 
     @Override
     public TaskEntity query(UUID uuid) {
-        return null;
+        return tasks.get(uuid);
     }
 
     @Override

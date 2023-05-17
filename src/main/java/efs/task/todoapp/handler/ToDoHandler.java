@@ -1,6 +1,5 @@
 package efs.task.todoapp.handler;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import efs.task.todoapp.excpetion.*;
@@ -12,9 +11,9 @@ import efs.task.todoapp.repository.UUIDResponse;
 import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.service.ToDoService;
 
-import javax.swing.plaf.IconUIResource;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class ToDoHandler implements HttpHandler {
@@ -42,13 +41,12 @@ public class ToDoHandler implements HttpHandler {
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = addTask(taskJson, auth);
         } else if (method.equals("GET") && path.equals("/todo/task")) {
-            Headers headers = httpExchange.getRequestHeaders();
-            String auth = headers.getFirst("auth");
+            String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = getTasks(auth);
         } else if (method.equals("GET") && path.startsWith("/todo/task/")) {
             UUID uuid = UUID.fromString(path.split("/todo/task/")[1]);
-            response = getTaskById(uuid);
-            statusCode = HttpStatus.OK;
+            String auth = httpExchange.getRequestHeaders().getFirst("auth");
+            response = getTaskById(auth, uuid);
         } else if (method.equals("PUT") && path.startsWith("/todo/task/")) {
             UUID uuid = UUID.fromString(path.split("/todo/task/")[1]);
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -105,7 +103,7 @@ public class ToDoHandler implements HttpHandler {
             try {
                 statusCode = HttpStatus.CREATED;
                 return JsonSerializer.fromObjectToJson(new UUIDResponse(toDoService.addTask(taskEntity)));
-            } catch (BadUserOrPasswordException e) {
+            } catch (NoUsernameOrBadPasswordException e) {
                 statusCode = HttpStatus.UNAUTHORIZED;
                 return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
             }
@@ -116,28 +114,53 @@ public class ToDoHandler implements HttpHandler {
     }
 
     private TaskEntity createTask(String taskJson, String auth) {
-        if (auth == null || auth.isEmpty()) {
-            System.out.println("Brak naglowka");
-            throw new BadRequestException("Brak naglowka");
-        }
-
+        validateAuth(auth);
         TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
         taskEntity.setAuth(auth);
         boolean isDescriptionNotValid = taskEntity.getTaskDescription() == null || taskEntity.getTaskDescription().isEmpty();
         boolean isDueDateNotValid = taskEntity.getDueDate() == null || taskEntity.getDueDate().isEmpty();
         if (isDescriptionNotValid || isDueDateNotValid) {
-            System.out.println("Brak wymaganej tresci");
             throw new BadRequestException("Brak wymaganej tresci");
         }
         return taskEntity;
     }
 
     private String getTasks(String auth) {
-        return JsonSerializer.fromObjectToJson(toDoService.getTasks(auth));
+        try {
+            validateAuth(auth);
+            try {
+                statusCode = HttpStatus.OK;
+                return JsonSerializer.fromObjectToJson(toDoService.getTasks(auth));
+            } catch (NoUsernameOrBadPasswordException e) {
+                statusCode = HttpStatus.UNAUTHORIZED;
+                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            }
+        } catch (BadRequestException e) {
+            statusCode = HttpStatus.BAD_REQUEST;
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+        }
     }
 
-    private String getTaskById(UUID uuid) {
-        return JsonSerializer.fromObjectToJson(toDoService.getTaskById(uuid));
+    private String getTaskById(String auth, UUID uuid) {
+        try {
+            validateAuth(auth);
+            try {
+                statusCode = HttpStatus.OK;
+                return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, uuid));
+            } catch (NoUsernameOrBadPasswordException e) {
+                statusCode = HttpStatus.UNAUTHORIZED;
+                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            } catch (BadUserException e) {
+                statusCode = HttpStatus.FORBIDDEN;
+                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            } catch (NoSuchElementException e) {
+                statusCode = HttpStatus.NOT_FOUND;
+                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            }
+        } catch (BadRequestException e) {
+            statusCode = HttpStatus.BAD_REQUEST;
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+        }
     }
 
     private String updateTask(String taskJson, String auth, UUID uuid) {
@@ -153,6 +176,12 @@ public class ToDoHandler implements HttpHandler {
         } else {
             statusCode = HttpStatus.BAD_REQUEST;
             return "Nie usunieto";
+        }
+    }
+
+    private void validateAuth(String auth) {
+        if (auth == null || auth.isEmpty()) {
+            throw new BadRequestException("Brak naglowka");
         }
     }
 }

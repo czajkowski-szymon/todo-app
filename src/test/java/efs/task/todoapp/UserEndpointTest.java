@@ -1,6 +1,7 @@
 package efs.task.todoapp;
 
 import efs.task.todoapp.helpers.HttpStatus;
+import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(ToDoServerExtension.class)
 public class UserEndpointTest {
-    public static final int CREATED = HttpStatus.CREATED.value();
-    public static final int BAD_REQUEST = HttpStatus.BAD_REQUEST.value();
-    public static final int CONFLICT = HttpStatus.CONFLICT.value();
-    public static final String TODO_APP_PATH = "http://localhost:8080/todo/user";
-    public static final String USER_JSON = "{\"username\": \"janKowalski\", \"password\": \"am!sK#123\"}";
-
     private HttpClient httpClient;
 
     @BeforeEach
@@ -34,26 +29,26 @@ public class UserEndpointTest {
     }
 
     @Test
-    public void shouldReturnCreatedStatusForAddingUser() throws IOException, InterruptedException {
+    public void shouldReturnCreatedForAddingUser() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH))
-                .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON_1))
                 .build();
 
         //when
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
-        assertThat(httpResponse.statusCode()).isEqualTo(CREATED);
+        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.CREATED);
     }
 
     @ParameterizedTest(name = "input {0}")
     @CsvFileSource(resources = {"/badjsonuser.csv"})
-    public void shouldReturnBadRequestStatusForBadUserBodyCsv(String input) throws IOException, InterruptedException {
+    public void shouldReturnBadRequestForBadUserBodyCsv(String input) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH))
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
                 .POST(HttpRequest.BodyPublishers.ofString(input))
                 .build();
 
@@ -61,20 +56,20 @@ public class UserEndpointTest {
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
-        assertThat(httpResponse.statusCode()).isEqualTo(BAD_REQUEST);
+        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
     }
 
     @Test
     public void shouldReturnConflictForAlreadyAddedUser() throws IOException, InterruptedException {
         // given
         var httpRequest1 = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH))
-                .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON_1))
                 .build();
 
         var httpRequest2 = HttpRequest.newBuilder()
-                .uri(URI.create(TODO_APP_PATH))
-                .POST(HttpRequest.BodyPublishers.ofString(USER_JSON))
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON_1 + "user"))
                 .build();
 
         //when
@@ -83,6 +78,6 @@ public class UserEndpointTest {
         HttpResponse<String> httpResponse2 = httpClient.send(httpRequest2, ofString());
 
         // then
-        assertThat(httpResponse2.statusCode()).isEqualTo(CONFLICT);
+        assertThat(httpResponse2.statusCode()).isEqualTo(TestConstants.CONFLICT);
     }
 }

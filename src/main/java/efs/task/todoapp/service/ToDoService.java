@@ -1,15 +1,15 @@
 package efs.task.todoapp.service;
 
-import efs.task.todoapp.excpetion.BadUserOrPasswordException;
-import efs.task.todoapp.json.JsonSerializer;
+import efs.task.todoapp.excpetion.BadUserException;
+import efs.task.todoapp.excpetion.NoUsernameOrBadPasswordException;
 import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
 import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.repository.UserRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 public class ToDoService {
     private final UserRepository userRepository;
@@ -26,18 +26,31 @@ public class ToDoService {
 
     public UUID addTask(TaskEntity taskEntity) {
         if (!userRepository.getUsers().containsKey(taskEntity.getAuth())) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new BadUserOrPasswordException("Brak uzytkownika lub bledne haslo");
+            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
         return taskRepository.save(taskEntity);
     }
 
     public List<TaskEntity> getTasks(String auth) {
+        if (!userRepository.getUsers().containsKey(auth)) {
+            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        }
         return taskRepository.query(task -> task.getAuth().equals(auth));
     }
 
-    public TaskEntity getTaskById(UUID uuid) {
-        return taskRepository.query(uuid);
+    public TaskEntity getTaskById(String auth, UUID uuid) {
+        if (!userRepository.getUsers().containsKey(auth)) {
+            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        }
+        if (!taskRepository.getTasks().containsKey(uuid)) {
+            throw new NoSuchElementException("Nie ma takiego zadania");
+        }
+
+        TaskEntity taskEntity = taskRepository.query(uuid);
+        if (!taskEntity.getAuth().equals(auth)) {
+            throw new BadUserException("Zadanie nalezy do innego uzytkownika");
+        }
+        return taskEntity;
     }
 
     public TaskEntity updateTask(TaskEntity taskEntity, UUID uuid) {
