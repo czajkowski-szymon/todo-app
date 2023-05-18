@@ -2,20 +2,16 @@ package efs.task.todoapp.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import efs.task.todoapp.ToDoApplication;
 import efs.task.todoapp.excpetion.*;
 import efs.task.todoapp.helpers.HttpStatus;
 import efs.task.todoapp.json.JsonSerializer;
 import efs.task.todoapp.repository.AuthResponse;
-import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.UUIDResponse;
-import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.service.ToDoService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 public class ToDoHandler implements HttpHandler {
     private ToDoService toDoService;
@@ -72,9 +68,8 @@ public class ToDoHandler implements HttpHandler {
 
     private String addUser(String userJson) {
         try {
-            UserEntity userEntity = createUser(userJson);
             statusCode = HttpStatus.CREATED;
-            return JsonSerializer.fromObjectToJson(new AuthResponse(toDoService.addUser(userEntity)));
+            return JsonSerializer.fromObjectToJson(new AuthResponse(toDoService.addUser(userJson)));
         } catch (UserAlreadyAddedException e) {
             statusCode = HttpStatus.CONFLICT;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
@@ -84,20 +79,8 @@ public class ToDoHandler implements HttpHandler {
         }
     }
 
-    private UserEntity createUser(String userJson) {
-        UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
-        boolean isUsernameNotValid = userEntity.getUsername() == null || userEntity.getUsername().isEmpty();
-        boolean isPasswordNotValid = userEntity.getPassword() == null || userEntity.getPassword().isEmpty();
-        if (isPasswordNotValid || isUsernameNotValid) {
-            System.out.println("Brak wymaganej tresci");
-            throw new BadRequestException("Brak wymaganej tresci");
-        }
-        return userEntity;
-    }
-
     private String addTask(String taskJson, String auth) {
         try {
-            validateAuth(auth);
             statusCode = HttpStatus.CREATED;
             return JsonSerializer.fromObjectToJson(new UUIDResponse(toDoService.addTask(taskJson, auth)));
         } catch (NoUsernameOrBadPasswordException e) {
@@ -111,7 +94,6 @@ public class ToDoHandler implements HttpHandler {
 
     private String getTasks(String auth) {
         try {
-            validateAuth(auth);
             statusCode = HttpStatus.OK;
             return JsonSerializer.fromObjectToJson(toDoService.getTasks(auth));
         } catch (NoUsernameOrBadPasswordException e) {
@@ -125,12 +107,8 @@ public class ToDoHandler implements HttpHandler {
 
     private String getTaskById(String auth, String path) {
         try {
-            String uuidString = validatePath(path);
-            validateAuth(auth);
-            validateUUID(uuidString);
-            UUID uuid = UUID.fromString(uuidString);
             statusCode = HttpStatus.OK;
-            return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, uuid));
+            return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, path));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
@@ -145,19 +123,15 @@ public class ToDoHandler implements HttpHandler {
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         } catch (IllegalArgumentException e ) {
             statusCode = HttpStatus.BAD_REQUEST;
-            System.out.println("Nie ma takiego zadania");
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Nie ma takiego zadania"));
+            System.out.println("Bledne uuid");
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Bledne uuid"));
         }
     }
 
     private String updateTask(String taskJson, String auth, String path) {
         try {
-            String uuidString = validatePath(path);
-            validateAuth(auth);
-            validateUUID(uuidString);
-            UUID uuid = UUID.fromString(uuidString);
             statusCode = HttpStatus.OK;
-            return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskJson, auth, uuid));
+            return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskJson, path, auth));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
@@ -179,12 +153,8 @@ public class ToDoHandler implements HttpHandler {
 
     private String deleteTask(String auth, String path) {
         try {
-            String uuidString = validatePath(path);
-            validateAuth(auth);
-            validateUUID(uuidString);
-            UUID uuid = UUID.fromString(uuidString);
             statusCode = HttpStatus.OK;
-            toDoService.deleteTask(auth, uuid);
+            toDoService.deleteTask(auth, path);
             return "";
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
@@ -203,29 +173,5 @@ public class ToDoHandler implements HttpHandler {
             System.out.println("Zle uuid");
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Zle uuid"));
         }
-    }
-
-    private void validateAuth(String auth) {
-        String[] authSegments = auth.split(":");
-        if (auth.isEmpty() || authSegments.length < 2) {
-            System.out.println("Brak naglowka");
-            throw new BadRequestException("Brak naglowka");
-        }
-    }
-
-    private void validateUUID(String uuid) {
-        if (uuid == null || uuid.isEmpty()) {
-            System.out.println("Brak parametru");
-            throw new BadRequestException("Brak parametru");
-        }
-    }
-
-    private String validatePath(String path) {
-        String[] segments = path.split("/todo/task/");
-        if (segments.length < 2) {
-            System.out.println("Brak parametru");
-            throw new BadRequestException("Brak parametru");
-        }
-        return segments[1];
     }
 }

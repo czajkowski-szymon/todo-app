@@ -24,7 +24,8 @@ public class ToDoService {
         this.taskRepository = taskRepository;
     }
 
-    public String addUser(UserEntity userEntity) {
+    public String addUser(String userJson) {
+        UserEntity userEntity = createUser(userJson);
         if (userRepository.getUsers().containsValue(userEntity)) {
             System.out.println("Uzytkownik od podanej nazwie juz istnieje");
             throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
@@ -33,6 +34,7 @@ public class ToDoService {
     }
 
     public UUID addTask(String taskJson, String auth) {
+        validateAuth(auth);
         decodeAuth(auth);
         TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
         taskEntity.setAuth(auth);
@@ -45,6 +47,7 @@ public class ToDoService {
     }
 
     public List<TaskEntity> getTasks(String auth) {
+        validateAuth(auth);
         decodeAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
@@ -53,7 +56,11 @@ public class ToDoService {
         return taskRepository.query(task -> task.getAuth().equals(auth));
     }
 
-    public TaskEntity getTaskById(String auth, UUID uuid) {
+    public TaskEntity getTaskById(String auth, String path) {
+        String uuidString = validatePath(path);
+        validateAuth(auth);
+        validateUUID(uuidString);
+        UUID uuid = UUID.fromString(uuidString);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
@@ -71,7 +78,11 @@ public class ToDoService {
         return taskEntity;
     }
 
-    public TaskEntity updateTask(String taskJson, String auth, UUID uuid) {
+    public TaskEntity updateTask(String taskJson, String path, String auth) {
+        String uuidString = validatePath(path);
+        validateAuth(auth);
+        validateUUID(uuidString);
+        UUID uuid = UUID.fromString(uuidString);
         decodeAuth(auth);
         TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
         taskEntity.setAuth(auth);
@@ -93,7 +104,12 @@ public class ToDoService {
         return newTaskEntity;
     }
 
-    public void deleteTask(String auth, UUID uuid) {
+    public void deleteTask(String auth, String path) {
+        String uuidString = validatePath(path);
+        validateAuth(auth);
+        validateUUID(uuidString);
+        UUID uuid = UUID.fromString(uuidString);
+        decodeAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
@@ -110,6 +126,25 @@ public class ToDoService {
         taskRepository.delete(uuid);
     }
 
+    private UserEntity createUser(String userJson) {
+        UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
+        boolean isUsernameNotValid = userEntity.getUsername() == null || userEntity.getUsername().isEmpty();
+        boolean isPasswordNotValid = userEntity.getPassword() == null || userEntity.getPassword().isEmpty();
+        if (isPasswordNotValid || isUsernameNotValid) {
+            System.out.println("Brak wymaganej tresci");
+            throw new BadRequestException("Brak wymaganej tresci");
+        }
+        return userEntity;
+    }
+
+    private void validateAuth(String auth) {
+        String[] authSegments = auth.split(":");
+        if (auth.isEmpty() || authSegments.length < 2) {
+            System.out.println("Brak naglowka");
+            throw new BadRequestException("Brak naglowka");
+        }
+    }
+
     private void decodeAuth(String auth) {
         try {
             String[] segmentsAuth = auth.split(":");
@@ -119,4 +154,21 @@ public class ToDoService {
             throw new BadRequestException("Blad auth");
         }
     }
+
+    private String validatePath(String path) {
+        String[] segments = path.split("/todo/task/");
+        if (segments.length < 2) {
+            System.out.println("Brak parametru");
+            throw new BadRequestException("Brak parametru");
+        }
+        return segments[1];
+    }
+
+    private void validateUUID(String uuid) {
+        if (uuid == null || uuid.isEmpty()) {
+            System.out.println("Brak parametru");
+            throw new BadRequestException("Brak parametru");
+        }
+    }
+
 }
