@@ -14,6 +14,7 @@ import efs.task.todoapp.service.ToDoService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLOutput;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -30,7 +31,8 @@ public class ToDoHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
         String path = httpExchange.getRequestURI().getPath();
-
+        System.out.println(method);
+        System.out.println(path);
         if (method.equals("OPTIONS") && path.startsWith("/todo/")) {
             statusCode = HttpStatus.OK;
             response = "";
@@ -55,8 +57,8 @@ public class ToDoHandler implements HttpHandler {
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = deleteTask(auth, path);
         } else {
-            response = "Page not found";
             statusCode = HttpStatus.NOT_FOUND;
+            response = JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Page not found"));
         }
 
         httpExchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -140,24 +142,22 @@ public class ToDoHandler implements HttpHandler {
             validateAuth(auth);
             validateUUID(uuidString);
             UUID uuid = UUID.fromString(uuidString);
-            try {
-                statusCode = HttpStatus.OK;
-                return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, uuid));
-            } catch (NoUsernameOrBadPasswordException e) {
-                statusCode = HttpStatus.UNAUTHORIZED;
-                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
-            } catch (BadUserException e) {
-                statusCode = HttpStatus.FORBIDDEN;
-                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
-            } catch (NoSuchElementException e) {
-                statusCode = HttpStatus.NOT_FOUND;
-                return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
-            }
+            statusCode = HttpStatus.OK;
+            return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, uuid));
+        } catch (NoUsernameOrBadPasswordException e) {
+            statusCode = HttpStatus.UNAUTHORIZED;
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+        } catch (BadUserException e) {
+            statusCode = HttpStatus.FORBIDDEN;
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+        } catch (NoSuchElementException e) {
+            statusCode = HttpStatus.NOT_FOUND;
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         } catch (IllegalArgumentException e ) {
-            statusCode = HttpStatus.NOT_FOUND;
+            statusCode = HttpStatus.BAD_REQUEST;
             System.out.println("Nie ma takiego zadania");
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Nie ma takiego zadania"));
         }
@@ -184,7 +184,7 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.BAD_REQUEST;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         } catch (IllegalArgumentException e ) {
-            statusCode = HttpStatus.NOT_FOUND;
+            statusCode = HttpStatus.BAD_REQUEST;
             System.out.println("Nie ma takiego zadania");
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Nie ma takiego zadania"));
         }
@@ -212,9 +212,9 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.BAD_REQUEST;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         } catch (IllegalArgumentException e) {
-            statusCode = HttpStatus.NOT_FOUND;
-            System.out.println("Nie ma takiego zadania");
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Nie ma takiego zadania"));
+            statusCode = HttpStatus.BAD_REQUEST;
+            System.out.println("Zle uuid");
+            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Zle uuid"));
         }
     }
 
