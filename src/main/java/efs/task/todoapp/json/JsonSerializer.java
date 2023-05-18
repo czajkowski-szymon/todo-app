@@ -12,6 +12,7 @@ public class JsonSerializer {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
+            System.out.println("Brak wymaganej tresci");
             throw new BadRequestException("Brak wymaganej tresci");
         }
     }
@@ -20,6 +21,7 @@ public class JsonSerializer {
         try {
             return objectMapper.readValue(json, result);
         } catch (JsonProcessingException e) {
+            System.out.println("Brak wymaganej tresci");
             throw new BadRequestException("Brak wymaganej tresci");
         }
     }

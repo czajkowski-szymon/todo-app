@@ -37,11 +37,13 @@ public class TaskRepository implements Repository<UUID, TaskEntity> {
 
     @Override
     public TaskEntity update(UUID uuid, TaskEntity taskEntity) {
-        return null;
+        tasks.get(uuid).update(taskEntity.getTaskDescription(), taskEntity.getDueDate());
+        System.out.println(tasks);
+        return tasks.get(uuid);
     }
 
     @Override
     public boolean delete(UUID uuid) {
-        return false;
+        return tasks.remove(uuid) != null;
     }
 }

@@ -20,10 +20,8 @@ public class UserRepository implements Repository<String, UserEntity> {
     @Override
     public String save(UserEntity userEntity) {
         String auth = encode(userEntity.getUsername(), userEntity.getPassword());
-        if (users.containsValue(userEntity)) {
-            throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
-        }
         users.put(auth, userEntity);
+        System.out.println("Uzytkownik " + userEntity + " dodany");
         return auth;
     }
 

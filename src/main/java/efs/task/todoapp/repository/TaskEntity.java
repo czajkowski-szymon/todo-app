@@ -3,7 +3,9 @@ package efs.task.todoapp.repository;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class TaskEntity {
@@ -18,9 +20,9 @@ public class TaskEntity {
 
     @JsonProperty("due")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private String dueDate;
+    private Date dueDate;
 
-    public TaskEntity(String taskDescription, String dueDate) {
+    public TaskEntity(String taskDescription, Date dueDate) {
         this.taskDescription = taskDescription;
         this.dueDate = dueDate;
     }
@@ -52,15 +54,15 @@ public class TaskEntity {
         this.taskDescription = taskDescription;
     }
 
-    public String getDueDate() {
+    public Date getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(String dueDate) {
+    public void setDueDate(Date dueDate) {
         this.dueDate = dueDate;
     }
 
-    public void update(String taskDescription, String dueDate) {
+    public void update(String taskDescription, Date dueDate) {
         setTaskDescription(taskDescription);
         setDueDate(dueDate);
     }
