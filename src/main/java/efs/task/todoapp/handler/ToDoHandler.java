@@ -50,6 +50,7 @@ public class ToDoHandler implements HttpHandler {
             response = getTaskById(auth, path);
         } else if (method.equals("PUT") && path.startsWith("/todo/task")) {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println(taskJson);
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = updateTask(taskJson, auth, path);
         } else if (method.equals("DELETE") && path.startsWith("/todo/task")) {
@@ -59,7 +60,7 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.NOT_FOUND;
             response = JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Page not found"));
         }
-
+        System.out.println(statusCode.value());
         httpExchange.getResponseHeaders().set("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "auth, Content-Type, Accept, X-Requested-With");
