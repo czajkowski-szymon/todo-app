@@ -1,13 +1,16 @@
 package efs.task.todoapp.service;
 
+import efs.task.todoapp.excpetion.BadRequestException;
 import efs.task.todoapp.excpetion.BadUserException;
 import efs.task.todoapp.excpetion.NoUsernameOrBadPasswordException;
 import efs.task.todoapp.excpetion.UserAlreadyAddedException;
+import efs.task.todoapp.json.JsonSerializer;
 import efs.task.todoapp.repository.TaskEntity;
 import efs.task.todoapp.repository.TaskRepository;
 import efs.task.todoapp.repository.UserEntity;
 import efs.task.todoapp.repository.UserRepository;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -29,8 +32,11 @@ public class ToDoService {
         return userRepository.save(userEntity);
     }
 
-    public UUID addTask(TaskEntity taskEntity) {
-        if (!userRepository.getUsers().containsKey(taskEntity.getAuth())) {
+    public UUID addTask(String taskJson, String auth) {
+        decodeAuth(auth);
+        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        taskEntity.setAuth(auth);
+        if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
@@ -39,6 +45,7 @@ public class ToDoService {
     }
 
     public List<TaskEntity> getTasks(String auth) {
+        decodeAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
@@ -64,8 +71,11 @@ public class ToDoService {
         return taskEntity;
     }
 
-    public TaskEntity updateTask(TaskEntity taskEntity, UUID uuid) {
-        if (!userRepository.getUsers().containsKey(taskEntity.getAuth())) {
+    public TaskEntity updateTask(String taskJson, String auth, UUID uuid) {
+        decodeAuth(auth);
+        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        taskEntity.setAuth(auth);
+        if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
@@ -98,5 +108,15 @@ public class ToDoService {
         }
         System.out.println("Zadanie o id: " + uuid + " zostalo usuniete");
         taskRepository.delete(uuid);
+    }
+
+    private void decodeAuth(String auth) {
+        try {
+            String[] segmentsAuth = auth.split(":");
+            Base64.getDecoder().decode(segmentsAuth[0]);
+            Base64.getDecoder().decode(segmentsAuth[1]);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Blad auth");
+        }
     }
 }

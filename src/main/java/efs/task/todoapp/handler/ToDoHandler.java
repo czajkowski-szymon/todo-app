@@ -97,9 +97,9 @@ public class ToDoHandler implements HttpHandler {
 
     private String addTask(String taskJson, String auth) {
         try {
-            TaskEntity taskEntity = createTask(taskJson, auth);
+            validateAuth(auth);
             statusCode = HttpStatus.CREATED;
-            return JsonSerializer.fromObjectToJson(new UUIDResponse(toDoService.addTask(taskEntity)));
+            return JsonSerializer.fromObjectToJson(new UUIDResponse(toDoService.addTask(taskJson, auth)));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
@@ -107,19 +107,6 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.BAD_REQUEST;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
         }
-    }
-
-    private TaskEntity createTask(String taskJson, String auth) {
-        validateAuth(auth);
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
-        taskEntity.setAuth(auth);
-        boolean isDescriptionNotValid = taskEntity.getTaskDescription() == null || taskEntity.getTaskDescription().isEmpty();
-        boolean isDueDateNotValid = taskEntity.getDueDate() == null || taskEntity.getDueDate().toString().isEmpty();
-        if (isDescriptionNotValid || isDueDateNotValid) {
-            System.out.println("Brak wymaganej tresci");
-            throw new BadRequestException("Brak wymaganej tresci");
-        }
-        return taskEntity;
     }
 
     private String getTasks(String auth) {
@@ -166,11 +153,11 @@ public class ToDoHandler implements HttpHandler {
     private String updateTask(String taskJson, String auth, String path) {
         try {
             String uuidString = validatePath(path);
-            TaskEntity taskEntity = createTask(taskJson, auth);
+            validateAuth(auth);
             validateUUID(uuidString);
             UUID uuid = UUID.fromString(uuidString);
             statusCode = HttpStatus.OK;
-            return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskEntity, uuid));
+            return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskJson, auth, uuid));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
             return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
@@ -219,7 +206,8 @@ public class ToDoHandler implements HttpHandler {
     }
 
     private void validateAuth(String auth) {
-        if (auth == null || auth.isEmpty()) {
+        String[] authSegments = auth.split(":");
+        if (auth.isEmpty() || authSegments.length < 2) {
             System.out.println("Brak naglowka");
             throw new BadRequestException("Brak naglowka");
         }
