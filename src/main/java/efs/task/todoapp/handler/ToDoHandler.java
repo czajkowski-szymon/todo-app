@@ -14,7 +14,6 @@ import efs.task.todoapp.service.ToDoService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLOutput;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -49,11 +48,11 @@ public class ToDoHandler implements HttpHandler {
         } else if (method.equals("GET") && path.startsWith("/todo/task/")) {
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = getTaskById(auth, path);
-        } else if (method.equals("PUT") && path.startsWith("/todo/task/")) {
+        } else if (method.equals("PUT") && path.startsWith("/todo/task")) {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = updateTask(taskJson, auth, path);
-        } else if (method.equals("DELETE") && path.startsWith("/todo/task/")) {
+        } else if (method.equals("DELETE") && path.startsWith("/todo/task")) {
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             response = deleteTask(auth, path);
         } else {
