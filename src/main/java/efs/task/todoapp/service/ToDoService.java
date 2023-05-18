@@ -36,7 +36,7 @@ public class ToDoService {
     public UUID addTask(String taskJson, String auth) {
         validateAuth(auth);
         decodeAuth(auth);
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        TaskEntity taskEntity = createTask(taskJson, auth);
         taskEntity.setAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
@@ -84,7 +84,7 @@ public class ToDoService {
         validateUUID(uuidString);
         UUID uuid = UUID.fromString(uuidString);
         decodeAuth(auth);
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        TaskEntity taskEntity = createTask(taskJson, auth);
         taskEntity.setAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
@@ -110,6 +110,10 @@ public class ToDoService {
         validateUUID(uuidString);
         UUID uuid = UUID.fromString(uuidString);
         decodeAuth(auth);
+        if (!taskRepository.delete(uuid)) {
+            System.out.println("Nie ma takiego zadania");
+            throw new NoSuchElementException("Nie ma takiego zadania");
+        }
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
@@ -117,10 +121,6 @@ public class ToDoService {
         if (!taskRepository.getTasks().get(uuid).getAuth().equals(auth)) {
             System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
             throw new BadUserException("Zadanie nalezy do innego uzytkownika");
-        }
-        if (!taskRepository.delete(uuid)) {
-            System.out.println("Nie ma takiego zadania");
-            throw new NoSuchElementException("Nie ma takiego zadania");
         }
         System.out.println("Zadanie o id: " + uuid + " zostalo usuniete");
         taskRepository.delete(uuid);
@@ -135,6 +135,23 @@ public class ToDoService {
             throw new BadRequestException("Brak wymaganej tresci");
         }
         return userEntity;
+    }
+
+    private TaskEntity createTask(String taskJson, String auth) {
+        if (auth == null || auth.isEmpty()) {
+            System.out.println("Brak naglowka");
+            throw new BadRequestException("Brak naglowka");
+        }
+
+        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        taskEntity.setAuth(auth);
+        boolean isDescriptionNotValid = taskEntity.getTaskDescription() == null || taskEntity.getTaskDescription().isEmpty();
+        boolean isDueDateNotValid = taskEntity.getDueDate() == null || taskEntity.getDueDate().toString().isEmpty();
+        if (isDescriptionNotValid || isDueDateNotValid) {
+            System.out.println("Brak wymaganej tresci");
+            throw new BadRequestException("Brak wymaganej tresci");
+        }
+        return taskEntity;
     }
 
     private void validateAuth(String auth) {
