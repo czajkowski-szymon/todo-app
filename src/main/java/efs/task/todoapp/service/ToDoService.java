@@ -59,6 +59,7 @@ public class ToDoService {
     public TaskEntity getTaskById(String auth, String path) {
         String uuidString = validatePath(path);
         validateAuth(auth);
+        decodeAuth(auth);
         validateUUID(uuidString);
         UUID uuid = UUID.fromString(uuidString);
         if (!userRepository.getUsers().containsKey(auth)) {
@@ -186,5 +187,4 @@ public class ToDoService {
             throw new BadRequestException("Brak parametru");
         }
     }
-
 }

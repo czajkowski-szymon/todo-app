@@ -86,7 +86,7 @@ public class GetTaskEndpointTest {
         // given
         var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", "xxxx:=xxxx")
+                .header("auth", "lorem:dXNlcm5hbWUy:cGFzc3dvcmQ=")
                 .GET()
                 .build();
 
@@ -153,7 +153,7 @@ public class GetTaskEndpointTest {
 
     @Test
     @Timeout(1)
-    public void shouldReturnUnauthorizedForBadHeaderGetTask() throws IOException, InterruptedException {
+    public void shouldReturnBadRequestForBadHeaderGetTask() throws IOException, InterruptedException {
         // given
         var httpRequestPOST = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
@@ -175,7 +175,7 @@ public class GetTaskEndpointTest {
         HttpResponse<String> httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
-        assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.UNAUTHORIZED);
+        assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
     }
 
     @Test
