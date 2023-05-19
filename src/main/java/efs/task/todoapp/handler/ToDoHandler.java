@@ -80,98 +80,108 @@ public class ToDoHandler implements HttpHandler {
     }
 
     private String addTask(String taskJson, String auth) {
+        String message;
         try {
             statusCode = HttpStatus.CREATED;
             return JsonSerializer.fromObjectToJson(new UUIDResponse(toDoService.addTask(taskJson, auth)));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         }
+        return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), message));
     }
 
     private String getTasks(String auth) {
+        String message;
         try {
             statusCode = HttpStatus.OK;
             return JsonSerializer.fromObjectToJson(toDoService.getTasks(auth));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         }
+        return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), message));
     }
 
     private String getTaskById(String auth, String path) {
+        String message;
         try {
             statusCode = HttpStatus.OK;
             return JsonSerializer.fromObjectToJson(toDoService.getTaskById(auth, path));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadUserException e) {
             statusCode = HttpStatus.FORBIDDEN;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (NoSuchElementException e) {
             statusCode = HttpStatus.NOT_FOUND;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (IllegalArgumentException e ) {
             statusCode = HttpStatus.BAD_REQUEST;
             System.out.println("Bledne uuid");
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Bledne uuid"));
+            message = "Bledne uuid";
         }
+        return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), message));
     }
 
     private String updateTask(String taskJson, String auth, String path) {
+        String message;
         try {
             statusCode = HttpStatus.OK;
             return JsonSerializer.fromObjectToJson(toDoService.updateTask(taskJson, path, auth));
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadUserException e) {
             statusCode = HttpStatus.FORBIDDEN;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (NoSuchElementException e) {
             statusCode = HttpStatus.NOT_FOUND;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (IllegalArgumentException e ) {
             statusCode = HttpStatus.BAD_REQUEST;
             System.out.println("Nie ma takiego zadania");
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Nie ma takiego zadania"));
+            message = "Nie ma takiego zadania";
         }
+        return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), message));
     }
 
     private String deleteTask(String auth, String path) {
+        String message;
         try {
             statusCode = HttpStatus.OK;
             toDoService.deleteTask(auth, path);
             return "";
         } catch (NoUsernameOrBadPasswordException e) {
             statusCode = HttpStatus.UNAUTHORIZED;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadUserException e) {
             statusCode = HttpStatus.FORBIDDEN;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (NoSuchElementException e) {
             statusCode = HttpStatus.NOT_FOUND;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (BadRequestException e) {
             statusCode = HttpStatus.BAD_REQUEST;
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), e.getMessage()));
+            message = e.getMessage();
         } catch (IllegalArgumentException e) {
             statusCode = HttpStatus.BAD_REQUEST;
             System.out.println("Zle uuid");
-            return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Zle uuid"));
+            message = e.getMessage();
         }
+        return JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), message));
     }
 }
