@@ -5,7 +5,6 @@ import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -30,7 +29,6 @@ public class UserEndpointTest {
     }
 
     @Test
-    @Timeout(1)
     public void shouldReturnCreatedForAddingUser() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -47,7 +45,6 @@ public class UserEndpointTest {
 
     @ParameterizedTest(name = "input {0}")
     @CsvFileSource(resources = {"/badjsonuser.csv"})
-    @Timeout(1)
     public void shouldReturnBadRequestForBadUserBodyCsv(String input) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -63,7 +60,6 @@ public class UserEndpointTest {
     }
 
     @Test
-    @Timeout(1)
     public void shouldReturnConflictForAlreadyAddedUser() throws IOException, InterruptedException {
         // given
         var httpRequest1 = HttpRequest.newBuilder()

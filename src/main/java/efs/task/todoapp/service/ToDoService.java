@@ -97,7 +97,7 @@ public class ToDoService {
             System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
             throw new BadUserException("Zadanie nalezy do innego uzytkownika");
         }
-        TaskEntity taskEntity = createTask(taskJson, auth);
+        TaskEntity taskEntity = createTaskPut(taskJson, auth);
         taskEntity.setAuth(auth);
         TaskEntity newTaskEntity = taskRepository.update(uuid, taskEntity);
         System.out.println("Zadanie o id: " + uuid + " zostalo zaktualizowane");
@@ -151,6 +151,17 @@ public class ToDoService {
             System.out.println("Brak wymaganej tresci");
             throw new BadRequestException("Brak wymaganej tresci");
         }
+        return taskEntity;
+    }
+
+    private TaskEntity createTaskPut(String taskJson, String auth) {
+        if (auth == null || auth.isEmpty()) {
+            System.out.println("Brak naglowka");
+            throw new BadRequestException("Brak naglowka");
+        }
+
+        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
+        taskEntity.setAuth(auth);
         return taskEntity;
     }
 

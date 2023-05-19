@@ -37,8 +37,13 @@ public class TaskRepository implements Repository<UUID, TaskEntity> {
 
     @Override
     public TaskEntity update(UUID uuid, TaskEntity taskEntity) {
-        tasks.get(uuid).update(taskEntity.getTaskDescription(), taskEntity.getDueDate());
-        System.out.println(tasks);
+        if (taskEntity.getTaskDescription() == null) {
+            tasks.get(uuid).setDueDate(taskEntity.getDueDate());
+        } else if (taskEntity.getDueDate() == null) {
+            tasks.get(uuid).setTaskDescription(taskEntity.getTaskDescription());
+        } else {
+            tasks.get(uuid).update(taskEntity.getTaskDescription(), taskEntity.getDueDate());
+        }
         return tasks.get(uuid);
     }
 

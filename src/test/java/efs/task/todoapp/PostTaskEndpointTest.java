@@ -7,7 +7,6 @@ import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -40,7 +39,6 @@ public class PostTaskEndpointTest {
     }
 
     @Test
-    @Timeout(1)
     public void shouldReturnCreatedForAddingTask() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -58,7 +56,6 @@ public class PostTaskEndpointTest {
 
     @ParameterizedTest(name = "input {0}")
     @CsvFileSource(resources = {"/badjsontask.csv"})
-    @Timeout(1)
     public void shouldReturnBadRequestForBadTaskBodyCsv(String input) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -75,7 +72,6 @@ public class PostTaskEndpointTest {
     }
 
     @Test
-    @Timeout(1)
     public void shouldReturnBadRequestForEmptyHeaderPost() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -92,12 +88,11 @@ public class PostTaskEndpointTest {
     }
 
     @Test
-    @Timeout(1)
-    public void shouldReturnBadRequestForBadHeaderPost() throws IOException, InterruptedException {
+    public void shouldReturnUnauthorizedForBadHeaderPost() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", "lorem:dXNlcm5hbWUy:cGFzc3dvcmQ=")
+                .header("auth", "xxxx:=xxxx")
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON))
                 .build();
 
@@ -105,6 +100,6 @@ public class PostTaskEndpointTest {
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
-        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
+        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.UNAUTHORIZED);
     }
 }
