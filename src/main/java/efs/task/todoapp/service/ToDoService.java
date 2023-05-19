@@ -36,12 +36,12 @@ public class ToDoService {
     public UUID addTask(String taskJson, String auth) {
         validateAuth(auth);
         decodeAuth(auth);
-        TaskEntity taskEntity = createTask(taskJson, auth);
-        taskEntity.setAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
+        TaskEntity taskEntity = createTask(taskJson, auth);
+        taskEntity.setAuth(auth);
         System.out.println("Zadanie " + taskEntity + " zostalo dodane");
         return taskRepository.save(taskEntity);
     }
@@ -81,25 +81,24 @@ public class ToDoService {
     public TaskEntity updateTask(String taskJson, String path, String auth) {
         String uuidString = validatePath(path);
         validateAuth(auth);
-        validateUUID(uuidString);
-        UUID uuid = UUID.fromString(uuidString);
         decodeAuth(auth);
-        TaskEntity taskEntity = createTask(taskJson, auth);
-        taskEntity.setAuth(auth);
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
+        validateUUID(uuidString);
+        UUID uuid = UUID.fromString(uuidString);
         if (!taskRepository.getTasks().containsKey(uuid)) {
             System.out.println("Nie ma takiego zadania");
             throw new NoSuchElementException("Nie ma takiego zadania");
         }
-
-        TaskEntity newTaskEntity = taskRepository.update(uuid, taskEntity);
-        if (!newTaskEntity.getAuth().equals(taskEntity.getAuth())) {
+        if (!taskRepository.query(uuid).getAuth().equals(auth)) {
             System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
             throw new BadUserException("Zadanie nalezy do innego uzytkownika");
         }
+        TaskEntity taskEntity = createTask(taskJson, auth);
+        taskEntity.setAuth(auth);
+        TaskEntity newTaskEntity = taskRepository.update(uuid, taskEntity);
         System.out.println("Zadanie o id: " + uuid + " zostalo zaktualizowane");
         return newTaskEntity;
     }
@@ -107,18 +106,18 @@ public class ToDoService {
     public void deleteTask(String auth, String path) {
         String uuidString = validatePath(path);
         validateAuth(auth);
-        validateUUID(uuidString);
-        UUID uuid = UUID.fromString(uuidString);
         decodeAuth(auth);
-        if (!taskRepository.delete(uuid)) {
-            System.out.println("Nie ma takiego zadania");
-            throw new NoSuchElementException("Nie ma takiego zadania");
-        }
         if (!userRepository.getUsers().containsKey(auth)) {
             System.out.println("Brak uzytkownika lub bledne haslo");
             throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
         }
-        if (!taskRepository.getTasks().get(uuid).getAuth().equals(auth)) {
+        validateUUID(uuidString);
+        UUID uuid = UUID.fromString(uuidString);
+        if (!taskRepository.getTasks().containsKey(uuid)) {
+            System.out.println("Nie ma takiego zadania");
+            throw new NoSuchElementException("Nie ma takiego zadania");
+        }
+        if (!taskRepository.query(uuid).getAuth().equals(auth)) {
             System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
             throw new BadUserException("Zadanie nalezy do innego uzytkownika");
         }
