@@ -7,6 +7,7 @@ import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
@@ -46,6 +47,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnOkForGettingTasks() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -62,6 +64,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnBadRequestForEmptyHeaderGetTasks() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
@@ -78,7 +81,8 @@ public class GetTaskEndpointTest {
     }
 
     @Test
-    public void shouldReturnUnauthorizedForBadHeaderGetTasks() throws IOException, InterruptedException {
+    @Timeout(1)
+    public void shouldReturnBadRequestForBadHeaderGetTasks() throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
@@ -90,10 +94,11 @@ public class GetTaskEndpointTest {
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
-        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.UNAUTHORIZED);
+        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnOkForGettingTask() throws IOException, InterruptedException {
         // given
         var httpRequestPOST = HttpRequest.newBuilder()
@@ -120,6 +125,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnBadRequestForEmptyHeaderGetTask() throws IOException, InterruptedException {
         // given
         var httpRequestPOST = HttpRequest.newBuilder()
@@ -146,6 +152,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnUnauthorizedForBadHeaderGetTask() throws IOException, InterruptedException {
         // given
         var httpRequestPOST = HttpRequest.newBuilder()
@@ -172,6 +179,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnForbiddenForWrongUserGetTask() throws IOException, InterruptedException {
         // given
         var httpRequestPOST = HttpRequest.newBuilder()
@@ -198,6 +206,7 @@ public class GetTaskEndpointTest {
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnNotFoundForNonExistingTask() throws IOException, InterruptedException {
         // given
         var httpRequestGET = HttpRequest.newBuilder()
