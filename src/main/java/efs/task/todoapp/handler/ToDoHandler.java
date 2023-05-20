@@ -31,11 +31,13 @@ public class ToDoHandler implements HttpHandler {
             response = "";
         } else if (method.equals("POST") && path.equals("/todo/user")) {
             String userJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println(userJson);
             response = addUser(userJson);
         } else if (method.equals("POST") && path.equals("/todo/task")) {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
             System.out.println(auth);
+            System.out.println(taskJson);
             response = addTask(taskJson, auth);
         } else if (method.equals("GET") && path.equals("/todo/task")) {
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
@@ -48,6 +50,7 @@ public class ToDoHandler implements HttpHandler {
         } else if (method.equals("PUT") && path.startsWith("/todo/task")) {
             String taskJson = new String(httpExchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             String auth = httpExchange.getRequestHeaders().getFirst("auth");
+            System.out.println(taskJson);
             System.out.println(auth);
             response = updateTask(taskJson, auth, path);
         } else if (method.equals("DELETE") && path.startsWith("/todo/task")) {
