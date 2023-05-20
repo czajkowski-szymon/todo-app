@@ -26,8 +26,6 @@ public class ToDoHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
         String path = httpExchange.getRequestURI().getPath();
-        System.out.println(method);
-        System.out.println(path);
         if (method.equals("OPTIONS") && path.startsWith("/todo/")) {
             statusCode = HttpStatus.OK;
             response = "";
@@ -56,7 +54,6 @@ public class ToDoHandler implements HttpHandler {
             statusCode = HttpStatus.NOT_FOUND;
             response = JsonSerializer.fromObjectToJson(new ErrorResponse(statusCode.value(), "Page not found"));
         }
-        System.out.println(statusCode.value());
         httpExchange.getResponseHeaders().set("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "auth, Content-Type, Accept, X-Requested-With");
