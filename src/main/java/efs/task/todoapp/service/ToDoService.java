@@ -98,7 +98,7 @@ public class ToDoService {
             System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
             throw new BadUserException("Zadanie nalezy do innego uzytkownika");
         }
-        TaskEntity taskEntity = createTaskPut(taskJson, auth);
+        TaskEntity taskEntity = createTask(taskJson, auth);
         taskEntity.setAuth(auth);
         TaskEntity newTaskEntity = taskRepository.update(uuid, taskEntity);
         System.out.println("Zadanie o id: " + uuid + " zostalo zaktualizowane");
