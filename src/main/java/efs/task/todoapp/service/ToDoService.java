@@ -155,17 +155,6 @@ public class ToDoService {
         return taskEntity;
     }
 
-    private TaskEntity createTaskPut(String taskJson, String auth) {
-        if (auth == null || auth.isEmpty()) {
-            System.out.println("Brak naglowka");
-            throw new BadRequestException("Brak naglowka");
-        }
-
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
-        taskEntity.setAuth(auth);
-        return taskEntity;
-    }
-
     private void validateAuth(String auth) {
         if (auth == null || auth.isEmpty()) {
             throw new BadRequestException("Brak naglowka");
