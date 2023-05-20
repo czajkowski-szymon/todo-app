@@ -143,8 +143,15 @@ public class ToDoService {
             System.out.println("Brak naglowka");
             throw new BadRequestException("Brak naglowka");
         }
+
         TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
         taskEntity.setAuth(auth);
+        boolean isDescriptionNotValid = taskEntity.getTaskDescription() == null || taskEntity.getTaskDescription().isEmpty();
+        boolean isDueDateNotValid = taskEntity.getDueDate() == null || taskEntity.getDueDate().toString().isEmpty();
+        if (isDescriptionNotValid && isDueDateNotValid) {
+            System.out.println("Brak wymaganej tresci");
+            throw new BadRequestException("Brak wymaganej tresci");
+        }
         return taskEntity;
     }
 
