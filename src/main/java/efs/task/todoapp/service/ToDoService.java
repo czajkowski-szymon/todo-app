@@ -167,8 +167,11 @@ public class ToDoService {
     }
 
     private void validateAuth(String auth) {
+        if (auth == null || auth.isEmpty()) {
+            throw new BadRequestException("Brak naglowka");
+        }
         String[] authSegments = auth.split(":");
-        if (auth.isEmpty() || authSegments.length < 2) {
+        if (authSegments.length < 2) {
             System.out.println("Brak naglowka");
             throw new BadRequestException("Brak naglowka");
         }
