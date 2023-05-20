@@ -16,14 +16,4 @@ public class WebServerFactory {
     public static HttpServer createServer() throws IOException {
         return HttpServer.create(new InetSocketAddress(HTTP_PORT), 0);
     }
-
-    public static void sendTestRequest() throws IOException, InterruptedException {
-        HttpClient httpClient = HttpClient.newHttpClient();
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/todo/user"))
-                .POST(HttpRequest.BodyPublishers.ofString(""))
-                .build();
-
-        httpClient.send(httpRequest, ofString());
-    }
 }

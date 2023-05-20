@@ -35,9 +35,9 @@ public class ToDoApplication {
         server.createContext("/todo/task", toDoHandler);
         server.setExecutor(null);
         server.start();
-        WebServerFactory.sendTestRequest();
 
         LOGGER.info("ToDoApplication's server started ...");
+        System.out.println("Server started");
     }
 
     public HttpServer createServer() throws IOException {

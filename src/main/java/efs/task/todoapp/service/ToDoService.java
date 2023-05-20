@@ -128,10 +128,7 @@ public class ToDoService {
     }
 
     private UserEntity createUser(String userJson) {
-        long start = System.currentTimeMillis();
         UserEntity userEntity = JsonSerializer.fromJsonToObject(userJson, UserEntity.class);
-        long end = System.currentTimeMillis();
-        System.out.println(end - start);
         boolean isUsernameNotValid = userEntity.getUsername() == null || userEntity.getUsername().isEmpty();
         boolean isPasswordNotValid = userEntity.getPassword() == null || userEntity.getPassword().isEmpty();
         if (isPasswordNotValid || isUsernameNotValid) {
