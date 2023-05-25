@@ -7,6 +7,7 @@ import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -24,27 +25,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(ToDoServerExtension.class)
 public class PostTaskEndpointTest {
     private HttpClient httpClient;
-    private AuthResponse authResponse;
 
     @BeforeEach
     public void setup() throws IOException, InterruptedException {
         httpClient = HttpClient.newHttpClient();
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
-                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON_1))
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON[0]))
                 .build();
 
-        String responseJson = httpClient.send(httpRequest, ofString()).body();
-        authResponse = JsonSerializer.fromJsonToObject(responseJson, AuthResponse.class);
+        httpClient.send(httpRequest, ofString()).body();
     }
 
     @Test
+    @Timeout(1)
     public void shouldReturnCreatedForAddingTask() throws IOException, InterruptedException {
         // given
-        var httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", authResponse.getAuth())
-                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON))
+                .header("auth", TestConstants.USER_AUTH[0])
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
         // when
@@ -54,14 +54,33 @@ public class PostTaskEndpointTest {
         assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.CREATED);
     }
 
-    @ParameterizedTest(name = "input {0}")
+    @ParameterizedTest(name = "request body = {0}")
     @CsvFileSource(resources = {"/badjsontask.csv"})
-    public void shouldReturnBadRequestForBadTaskBodyCsv(String input) throws IOException, InterruptedException {
+    @Timeout(1)
+    public void shouldReturnBadRequestForBadTaskBodyCsv(String body) throws IOException, InterruptedException {
         // given
-        var httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", authResponse.getAuth())
-                .POST(HttpRequest.BodyPublishers.ofString(input))
+                .header("auth", TestConstants.USER_JSON[0])
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        // when
+        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
+
+        // then
+        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
+    }
+
+    @ParameterizedTest(name = "header = {0}")
+    @CsvFileSource(resources = {"/badheaders.csv"})
+    @Timeout(1)
+    public void shouldReturnBadRequestForBadHeadersPostCsv(String header) throws IOException, InterruptedException {
+        // given
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
+                .header("auth", header)
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
         // when
@@ -72,28 +91,13 @@ public class PostTaskEndpointTest {
     }
 
     @Test
-    public void shouldReturnBadRequestForEmptyHeaderPost() throws IOException, InterruptedException {
+    @Timeout(1)
+    public void shouldReturnUnauthorizedForWrongUsernameOrPasswordPost() throws IOException, InterruptedException {
         // given
-        var httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", "")
-                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON))
-                .build();
-
-        // when
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
-
-        // then
-        assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
-    }
-
-    @Test
-    public void shouldReturnUnauthorizedForBadHeaderPost() throws IOException, InterruptedException {
-        // given
-        var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
-                .header("auth", "xxxx:=xxxx")
-                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON))
+                .header("auth", TestConstants.USER_AUTH[1])
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
         // when

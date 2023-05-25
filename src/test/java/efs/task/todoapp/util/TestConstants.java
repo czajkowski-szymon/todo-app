@@ -1,6 +1,7 @@
 package efs.task.todoapp.util;
 
 import efs.task.todoapp.helpers.HttpStatus;
+import efs.task.todoapp.json.JsonSerializer;
 
 public class TestConstants {
     public static final int OK = HttpStatus.OK.value();
@@ -11,7 +12,16 @@ public class TestConstants {
     public static final int FORBIDDEN = HttpStatus.FORBIDDEN.value();
     public static final int NOT_FOUND = HttpStatus.NOT_FOUND.value();
     public static final String TODO_APP_PATH = "http://localhost:8080/todo/";
-    public static final String TASK_JSON = "{\"description\": \"Kup mleko\", \"due\": \"2021-06-30\"}";
-    public static final String USER_JSON_1 = "{\"username\": \"janKowalski\", \"password\": \"am!sK#123\"}";
-    public static final String USER_JSON_2 = "{\"username\": \"piotrNowak\", \"password\": \"cb?kS$321\"}";
+    public static final String[] TASK_JSON =  {
+            "{\"description\": \"kup mleko\", \"due\": \"2021-06-30\"}",
+            "{\"description\": \"kup wode\"}"
+    };
+    public static final String[] USER_JSON = {
+            "{\"username\": \"name\", \"password\": \"xxx\"}",
+            "{\"username\": \"name2\", \"password\": \"xxx\"}"
+    };
+    public static final String[] USER_AUTH = {
+            "bmFtZQ==:eHh4",
+            "bmFtZTI=:eHh4"
+    };
 }

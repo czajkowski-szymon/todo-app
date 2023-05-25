@@ -1,25 +1,33 @@
 package efs.task.todoapp.repository;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
 
 public class UserEntity {
+    @JsonIgnore
+    private String auth;
     @JsonProperty("username")
     private String username;
 
     @JsonProperty("password")
     private String password;
 
-    private Map<UUID, TaskEntity> tasks;
-
     public UserEntity(String username, String password) {
         this.username = username;
         this.password = password;
-        tasks = new HashMap<>();
     }
 
     public UserEntity() {
+    }
+
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
     }
 
     public String getUsername() {

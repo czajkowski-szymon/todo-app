@@ -26,104 +26,101 @@ public class ToDoService {
 
     public String addUser(String userJson) {
         UserEntity userEntity = createUser(userJson);
-        if (userRepository.getUsers().containsValue(userEntity)) {
-            System.out.println("Uzytkownik od podanej nazwie juz istnieje");
-            throw new UserAlreadyAddedException("Uzytkownik od podanej nazwie juz istnieje");
+        userEntity.setAuth(encodeAuth(userEntity.getUsername(), userEntity.getPassword()));
+        if (userExists(userEntity.getAuth())) {
+            throw new UserAlreadyAddedException("User with given name already exists");
         }
 
         return userRepository.save(userEntity);
     }
 
     public UUID addTask(String taskJson, String auth) {
-        validateAuth(auth);
-        decodeAuth(auth);
-        if (!userRepository.getUsers().containsKey(auth)) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        if (!isAuthValid(auth)) {
+            throw new BadRequestException("Wrong header");
         }
-        TaskEntity taskEntity = createTask(taskJson, auth);
-        taskEntity.setAuth(auth);
-        System.out.println("Zadanie " + taskEntity + " zostalo dodane");
-        return taskRepository.save(taskEntity);
+        if (!userExists(auth)) {
+            throw new NoUsernameOrBadPasswordException("Wrong username or password");
+        }
+
+        return taskRepository.save(createTask(taskJson, auth));
     }
 
     public List<TaskEntity> getTasks(String auth) {
-        validateAuth(auth);
-        decodeAuth(auth);
-        if (!userRepository.getUsers().containsKey(auth)) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        if (!isAuthValid(auth)) {
+            throw new BadRequestException("Wrong header");
         }
+        if (!userExists(auth)) {
+            throw new NoUsernameOrBadPasswordException("Wrong username or password");
+        }
+
         return taskRepository.query(task -> task.getAuth().equals(auth));
     }
 
     public TaskEntity getTaskById(String auth, String path) {
-        String uuidString = validatePath(path);
-        validateAuth(auth);
-        decodeAuth(auth);
-        validateUUID(uuidString);
-        UUID uuid = UUID.fromString(uuidString);
-        if (!userRepository.getUsers().containsKey(auth)) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        UUID uuid;
+        if (!isAuthValid(auth)) {
+            throw new BadRequestException("Wrong header");
         }
-        if (!taskRepository.getTasks().containsKey(uuid)) {
-            System.out.println("Nie ma takiego zadania");
-            throw new NoSuchElementException("Nie ma takiego zadania");
+        if (isPathValid(path)) {
+            uuid = UUID.fromString(getUUID(path));
+        } else {
+            throw new BadRequestException("Empty uuid");
         }
-
-        TaskEntity taskEntity = taskRepository.query(uuid);
-        if (!taskEntity.getAuth().equals(auth)) {
-            System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
-            throw new BadUserException("Zadanie nalezy do innego uzytkownika");
+        if (!userExists(auth)) {
+            throw new NoUsernameOrBadPasswordException("Wrong username or password");
         }
-        return taskEntity;
+        if (!taskExists(uuid)) {
+            throw new NoSuchElementException("Task with given uuid does not exist");
+        }
+        if (!taskBelongToUser(uuid, auth)) {
+            throw new BadUserException("Task does not belong to given user");
+        }
+        return taskRepository.query(uuid);
     }
 
     public TaskEntity updateTask(String taskJson, String path, String auth) {
-        String uuidString = validatePath(path);
-        validateAuth(auth);
-        decodeAuth(auth);
-        if (!userRepository.getUsers().containsKey(auth)) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        UUID uuid;
+        if (!isAuthValid(auth)) {
+            throw new BadRequestException("Wrong header");
         }
-        validateUUID(uuidString);
-        UUID uuid = UUID.fromString(uuidString);
-        if (!taskRepository.getTasks().containsKey(uuid)) {
-            System.out.println("Nie ma takiego zadania");
-            throw new NoSuchElementException("Nie ma takiego zadania");
+        if (isPathValid(path)) {
+            uuid = UUID.fromString(getUUID(path));
+        } else {
+            throw new BadRequestException("Empty uuid");
         }
-        if (!taskRepository.query(uuid).getAuth().equals(auth)) {
-            System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
-            throw new BadUserException("Zadanie nalezy do innego uzytkownika");
+        if (!userExists(auth)) {
+            throw new NoUsernameOrBadPasswordException("Wrong username or password");
         }
-        TaskEntity taskEntity = createTask(taskJson, auth);
-        taskEntity.setAuth(auth);
-        TaskEntity newTaskEntity = taskRepository.update(uuid, taskEntity);
-        System.out.println("Zadanie o id: " + uuid + " zostalo zaktualizowane");
-        return newTaskEntity;
+        if (!taskExists(uuid)) {
+            throw new NoSuchElementException("Task with given uuid does not exist");
+        }
+        if (!taskBelongToUser(uuid, auth)) {
+            throw new BadUserException("Task does not belong to given user");
+        }
+
+        return taskRepository.update(uuid, createTask(taskJson, auth));
     }
 
     public void deleteTask(String auth, String path) {
-        String uuidString = validatePath(path);
-        validateAuth(auth);
-        decodeAuth(auth);
-        if (!userRepository.getUsers().containsKey(auth)) {
-            System.out.println("Brak uzytkownika lub bledne haslo");
-            throw new NoUsernameOrBadPasswordException("Brak uzytkownika lub bledne haslo");
+        UUID uuid;
+        if (!isAuthValid(auth)) {
+            throw new BadRequestException("Wrong header");
         }
-        validateUUID(uuidString);
-        UUID uuid = UUID.fromString(uuidString);
-        if (!taskRepository.getTasks().containsKey(uuid)) {
-            System.out.println("Nie ma takiego zadania");
-            throw new NoSuchElementException("Nie ma takiego zadania");
+        if (isPathValid(path)) {
+            uuid = UUID.fromString(getUUID(path));
+        } else {
+            throw new BadRequestException("Empty uuid");
         }
-        if (!taskRepository.query(uuid).getAuth().equals(auth)) {
-            System.out.println("Zadanie o id: " + uuid + " nalezy do innego uzytkownika");
-            throw new BadUserException("Zadanie nalezy do innego uzytkownika");
+        if (!userExists(auth)) {
+            throw new NoUsernameOrBadPasswordException("Wrong username or password");
         }
-        System.out.println("Zadanie o id: " + uuid + " zostalo usuniete");
+        if (!taskExists(uuid)) {
+            throw new NoSuchElementException("Task with given uuid does not exist");
+        }
+        if (!taskBelongToUser(uuid, auth)) {
+            throw new BadUserException("Task does not belong to given user");
+        }
+
         taskRepository.delete(uuid);
     }
 
@@ -132,63 +129,62 @@ public class ToDoService {
         boolean isUsernameNotValid = userEntity.getUsername() == null || userEntity.getUsername().isEmpty();
         boolean isPasswordNotValid = userEntity.getPassword() == null || userEntity.getPassword().isEmpty();
         if (isPasswordNotValid || isUsernameNotValid) {
-            System.out.println("Brak wymaganej tresci");
-            throw new BadRequestException("Brak wymaganej tresci");
+            throw new BadRequestException("Bad request body");
         }
+
         return userEntity;
     }
 
     private TaskEntity createTask(String taskJson, String auth) {
-        if (auth == null || auth.isEmpty()) {
-            System.out.println("Brak naglowka");
-            throw new BadRequestException("Brak naglowka");
-        }
-
         TaskEntity taskEntity = JsonSerializer.fromJsonToObject(taskJson, TaskEntity.class);
         taskEntity.setAuth(auth);
         boolean isDescriptionNotValid = taskEntity.getTaskDescription() == null || taskEntity.getTaskDescription().isEmpty();
         boolean isDueDateNotValid = taskEntity.getDueDate() == null || taskEntity.getDueDate().toString().isEmpty();
         if (isDescriptionNotValid && isDueDateNotValid) {
-            System.out.println("Brak wymaganej tresci");
-            throw new BadRequestException("Brak wymaganej tresci");
+            throw new BadRequestException("Bad request body");
         }
+        
         return taskEntity;
     }
 
-    private void validateAuth(String auth) {
-        if (auth == null || auth.isEmpty()) {
-            throw new BadRequestException("Brak naglowka");
-        }
-        String[] authSegments = auth.split(":");
-        if (authSegments.length < 2) {
-            System.out.println("Brak naglowka");
-            throw new BadRequestException("Brak naglowka");
-        }
-    }
-
-    private void decodeAuth(String auth) {
+    private boolean isAuthValid(String auth) {
         try {
-            String[] segmentsAuth = auth.split(":");
-            Base64.getDecoder().decode(segmentsAuth[0]);
-            Base64.getDecoder().decode(segmentsAuth[1]);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Blad auth");
+            String[] authSegments = auth.split(":");
+            if (authSegments.length < 2) {
+                return false;
+            }
+            Base64.getDecoder().decode(authSegments[0]);
+            Base64.getDecoder().decode(authSegments[1]);
+            return true;
+        } catch (NullPointerException | IllegalArgumentException e) {
+            return false;
         }
     }
 
-    private String validatePath(String path) {
+    private boolean isPathValid(String path) {
+        return path.split("/todo/task/").length == 2;
+    }
+
+    private String getUUID(String path) {
         String[] segments = path.split("/todo/task/");
-        if (segments.length < 2) {
-            System.out.println("Brak parametru");
-            throw new BadRequestException("Brak parametru");
-        }
         return segments[1];
     }
 
-    private void validateUUID(String uuid) {
-        if (uuid == null || uuid.isEmpty()) {
-            System.out.println("Brak parametru");
-            throw new BadRequestException("Brak parametru");
-        }
+    private String encodeAuth(String username, String password) {
+        return Base64.getEncoder().encodeToString(username.getBytes())
+                + ":"
+                + Base64.getEncoder().encodeToString(password.getBytes());
+    }
+
+    private boolean userExists(String auth) {
+        return userRepository.getUsers().containsKey(auth);
+    }
+
+    private boolean taskExists(UUID uuid) {
+        return taskRepository.getTasks().containsKey(uuid);
+    }
+
+    private boolean taskBelongToUser(UUID uuid, String auth) {
+        return taskRepository.query(uuid).getAuth().equals(auth);
     }
 }

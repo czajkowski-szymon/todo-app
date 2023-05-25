@@ -19,10 +19,8 @@ public class UserRepository implements Repository<String, UserEntity> {
 
     @Override
     public String save(UserEntity userEntity) {
-        String auth = encode(userEntity.getUsername(), userEntity.getPassword());
-        users.put(auth, userEntity);
-        System.out.println("Uzytkownik " + userEntity + " dodany");
-        return auth;
+        users.put(userEntity.getAuth(), userEntity);
+        return userEntity.getAuth();
     }
 
     @Override
@@ -43,10 +41,5 @@ public class UserRepository implements Repository<String, UserEntity> {
     @Override
     public boolean delete(String s) {
         return false;
-    }
-
-    private String encode(String username, String password) {
-        return Base64.getEncoder().encodeToString(username.getBytes()) + ":" +
-                Base64.getEncoder().encodeToString(password.getBytes());
     }
 }
