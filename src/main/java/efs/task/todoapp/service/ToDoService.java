@@ -62,9 +62,9 @@ public class ToDoService {
             throw new BadRequestException("Wrong header");
         }
         if (isPathValid(path)) {
-            uuid = UUID.fromString(getUUID(path));
+            uuid = getUUID(path);
         } else {
-            throw new BadRequestException("Empty uuid");
+            throw new BadRequestException("Wrong uuid");
         }
         if (!userExists(auth)) {
             throw new NoUsernameOrBadPasswordException("Wrong username or password");
@@ -84,9 +84,9 @@ public class ToDoService {
             throw new BadRequestException("Wrong header");
         }
         if (isPathValid(path)) {
-            uuid = UUID.fromString(getUUID(path));
+            uuid = getUUID(path);
         } else {
-            throw new BadRequestException("Empty uuid");
+            throw new BadRequestException("Wrong uuid");
         }
         if (!userExists(auth)) {
             throw new NoUsernameOrBadPasswordException("Wrong username or password");
@@ -107,9 +107,9 @@ public class ToDoService {
             throw new BadRequestException("Wrong header");
         }
         if (isPathValid(path)) {
-            uuid = UUID.fromString(getUUID(path));
+            uuid = getUUID(path);
         } else {
-            throw new BadRequestException("Empty uuid");
+            throw new BadRequestException("Wrong uuid");
         }
         if (!userExists(auth)) {
             throw new NoUsernameOrBadPasswordException("Wrong username or password");
@@ -165,9 +165,13 @@ public class ToDoService {
         return path.split("/todo/task/").length == 2;
     }
 
-    private String getUUID(String path) {
+    private UUID getUUID(String path) {
         String[] segments = path.split("/todo/task/");
-        return segments[1];
+        try {
+            return UUID.fromString(segments[1]);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Wrong uuid");
+        }
     }
 
     private String encodeAuth(String username, String password) {
