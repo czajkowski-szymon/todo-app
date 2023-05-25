@@ -45,8 +45,6 @@ public class DeleteEndpointTest {
         httpClient.send(httpRequest, ofString());
     }
 
-    // TODO: Test sprawdzajacy czy zadanie jest usuwane
-
     @ParameterizedTest(name = "header = {0}")
     @CsvFileSource(resources = {"/badheaders.csv"})
     @Timeout(1)

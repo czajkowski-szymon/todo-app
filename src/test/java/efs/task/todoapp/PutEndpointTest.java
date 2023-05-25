@@ -46,7 +46,6 @@ public class PutEndpointTest {
         httpClient.send(httpRequest, ofString());
     }
 
-    // TODO: Test sprawdzajacy czy aktualizuje dany task
     @Test
     @Timeout(1)
     public void shouldUpdateTask() throws IOException, InterruptedException {
