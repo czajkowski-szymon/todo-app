@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(ToDoServerExtension.class)
 public class GetTaskEndpointTest {
@@ -40,7 +42,7 @@ public class GetTaskEndpointTest {
     }
 
     private void addSecondUser() throws IOException, InterruptedException {
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON[1]))
                 .build();
@@ -50,47 +52,61 @@ public class GetTaskEndpointTest {
 
     @Test
     @Timeout(1)
-    public void shouldReturnTasks() throws IOException, InterruptedException {
+    public void shouldReturnTasksForUser() throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequestPOST1 = HttpRequest.newBuilder()
+        var httpRequestPOST1 = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
-        String httpResponsePOST = httpClient.send(httpRequestPOST1, ofString()).body();
-        UUIDResponse uuidResponse = JsonSerializer.fromJsonToObject(httpResponsePOST, UUIDResponse.class);
+        var httpRequestPOST2 = HttpRequest.newBuilder()
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
+                .header("auth", TestConstants.USER_AUTH[0])
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[1]))
+                .build();
 
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(TestConstants.TASK_JSON[0], TaskEntity.class);
-        taskEntity.setUuid(uuidResponse.getUuid());
+        String httpResponsePOST1 = httpClient.send(httpRequestPOST1, ofString()).body();
+        UUIDResponse uuid1 = JsonSerializer.fromJsonToObject(httpResponsePOST1, UUIDResponse.class);
+        String httpResponsePOST2 = httpClient.send(httpRequestPOST2, ofString()).body();
+        UUIDResponse uuid2 = JsonSerializer.fromJsonToObject(httpResponsePOST2, UUIDResponse.class);
+        TestConstants.TASK_OBJECT[0].setUuid(uuid1.getUuid());
+        TestConstants.TASK_OBJECT[1].setUuid(uuid2.getUuid());
 
-
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
+        var httpRequestGET = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .GET()
                 .build();
 
         // when
-        String httpResponseGET = httpClient.send(httpRequestGET, ofString()).body();
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
+        TaskEntity[] taskEntities = JsonSerializer.fromJsonToObject(httpResponseGET.body(), TaskEntity[].class);
+        boolean option1 = taskEntities[0].equals(TestConstants.TASK_OBJECT[0]) &&
+                taskEntities[1].equals(TestConstants.TASK_OBJECT[1]);
+        boolean option2 = taskEntities[1].equals(TestConstants.TASK_OBJECT[0]) &&
+                taskEntities[0].equals(TestConstants.TASK_OBJECT[1]);
 
         // then
-        assertThat(httpResponseGET).isEqualTo(JsonSerializer.fromObjectToJson(Arrays.asList(taskEntity)));
+        assertAll(
+                () -> assertTrue(option1 || option2),
+                () -> assertEquals(TestConstants.OK, httpResponseGET.statusCode())
+        );
     }
 
     @ParameterizedTest(name = "header = {0}")
-    @CsvFileSource(resources = {"/badheaders.csv"})
+    @ValueSource(strings = {"", "lorem:eHh4", "bmFtZQ==:lorem", "bmFtZQ=="})
     @Timeout(1)
     public void shouldReturnBadRequestForBadHeaderGetTasks(String header) throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", header)
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
+        var httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
         assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
@@ -99,14 +115,14 @@ public class GetTaskEndpointTest {
     @Test
     public void shouldReturnUnauthorizedForWrongUsernameOrPasswordGetTasks() throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[1])
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
+        var httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
         assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.UNAUTHORIZED);
@@ -114,56 +130,53 @@ public class GetTaskEndpointTest {
 
     @Test
     @Timeout(1)
-    public void shouldReturnTaskByID() throws IOException, InterruptedException {
+    public void shouldReturnTask() throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequestPOST = HttpRequest.newBuilder()
+        var httpRequestPOST = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
         String httpResponsePOST = httpClient.send(httpRequestPOST, ofString()).body();
-        UUIDResponse uuidResponse = JsonSerializer.fromJsonToObject(httpResponsePOST, UUIDResponse.class);
+        UUIDResponse uuid = JsonSerializer.fromJsonToObject(httpResponsePOST, UUIDResponse.class);
+        TestConstants.TASK_OBJECT[0].setUuid(uuid.getUuid());
 
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(TestConstants.TASK_JSON[0], TaskEntity.class);
-        taskEntity.setUuid(uuidResponse.getUuid());
-
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
-                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuidResponse.getUuid()))
+        var httpRequestGET = HttpRequest.newBuilder()
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid.getUuid()))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .GET()
                 .build();
 
         // when
-        String httpResponseGET = httpClient.send(httpRequestGET, ofString()).body();
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
-        assertThat(httpResponseGET).isEqualTo(JsonSerializer.fromObjectToJson(taskEntity));
+        assertThat(httpResponseGET.body()).isEqualTo(JsonSerializer.fromObjectToJson(TestConstants.TASK_OBJECT[0]));
     }
 
     @ParameterizedTest(name = "header = {0}")
-    @CsvFileSource(resources = {"/badheaders.csv"})
+    @ValueSource(strings = {"", "lorem:eHh4", "bmFtZQ==:lorem", "bmFtZQ=="})
     @Timeout(1)
     public void shouldReturnBadRequestForBadHeaderGetTask(String header) throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequestPOST = HttpRequest.newBuilder()
+        var httpRequestPOST = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
-        String httpResponsePOST = httpClient.send(httpRequestPOST, ofString()).body();
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(httpResponsePOST, TaskEntity.class);
-        String uuid = taskEntity.getUuid().toString();
+        var httpResponsePOST = httpClient.send(httpRequestPOST, ofString());
+        UUIDResponse uuid = JsonSerializer.fromJsonToObject(httpResponsePOST.body(), UUIDResponse.class);
 
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
-                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid))
+        var httpRequestGET = HttpRequest.newBuilder()
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid.getUuid()))
                 .header("auth", header)
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponseGET = httpClient.send(httpRequestGET, ofString());
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
         assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
@@ -173,24 +186,23 @@ public class GetTaskEndpointTest {
     @Timeout(1)
     public void shouldReturnUnauthorizedForWrongUsernameOrPasswordGetTask() throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequestPOST = HttpRequest.newBuilder()
+        var httpRequestPOST = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
                 .build();
 
-        String httpResponsePOST = httpClient.send(httpRequestPOST, ofString()).body();
-        TaskEntity taskEntity = JsonSerializer.fromJsonToObject(httpResponsePOST, TaskEntity.class);
-        String uuid = taskEntity.getUuid().toString();
+        var httpResponsePOST = httpClient.send(httpRequestPOST, ofString());
+        UUIDResponse uuid = JsonSerializer.fromJsonToObject(httpResponsePOST.body(), UUIDResponse.class);
 
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
-                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid))
+        var httpRequestGET = HttpRequest.newBuilder()
+                .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid.getUuid()))
                 .header("auth", TestConstants.USER_AUTH[1])
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponseGET = httpClient.send(httpRequestGET, ofString());
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
         assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.UNAUTHORIZED);
@@ -202,7 +214,7 @@ public class GetTaskEndpointTest {
         // given
         addSecondUser();
 
-        HttpRequest httpRequestPOST = HttpRequest.newBuilder()
+        var httpRequestPOST = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task"))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .POST(HttpRequest.BodyPublishers.ofString(TestConstants.TASK_JSON[0]))
@@ -213,14 +225,14 @@ public class GetTaskEndpointTest {
         UUIDResponse uuidResponse = JsonSerializer.fromJsonToObject(httpResponsePOST, UUIDResponse.class);
         String uuid = uuidResponse.getUuid().toString();
 
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
+        var httpRequestGET = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + uuid))
                 .header("auth", TestConstants.USER_AUTH[1])
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponseGET = httpClient.send(httpRequestGET, ofString());
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
         assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.FORBIDDEN);
@@ -230,14 +242,14 @@ public class GetTaskEndpointTest {
     @Timeout(1)
     public void shouldReturnNotFoundForNonExistingTaskGet() throws IOException, InterruptedException {
         // given
-        HttpRequest httpRequestGET = HttpRequest.newBuilder()
+        var httpRequestGET = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "task/" + UUID.randomUUID()))
                 .header("auth", TestConstants.USER_AUTH[0])
                 .GET()
                 .build();
 
         // when
-        HttpResponse<String> httpResponseGET = httpClient.send(httpRequestGET, ofString());
+        var httpResponseGET = httpClient.send(httpRequestGET, ofString());
 
         // then
         assertThat(httpResponseGET.statusCode()).isEqualTo(TestConstants.NOT_FOUND);

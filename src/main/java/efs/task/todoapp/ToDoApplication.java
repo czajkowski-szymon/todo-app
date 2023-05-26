@@ -13,14 +13,9 @@ import java.util.logging.Logger;
 public class ToDoApplication {
     private static final Logger LOGGER = Logger.getLogger(ToDoApplication.class.getName());
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         var application = new ToDoApplication();
-        HttpServer server = null;
-        try {
-            server = application.createServer();
-        } catch (IOException e) {
-            LOGGER.info("ToDoApplication's server failed to start");
-        }
+        var server = application.createServer();
         ToDoService toDoService = new ToDoService(new UserRepository(), new TaskRepository());
         ToDoHandler toDoHandler = new ToDoHandler(toDoService);
         server.createContext("/todo/user", toDoHandler);
@@ -31,7 +26,11 @@ public class ToDoApplication {
         LOGGER.info("ToDoApplication's server started ...");
     }
 
-    public HttpServer createServer() throws IOException {
-        return WebServerFactory.createServer();
+    public HttpServer createServer() {
+        try {
+            return WebServerFactory.createServer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

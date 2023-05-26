@@ -1,6 +1,5 @@
 package efs.task.todoapp;
 
-import efs.task.todoapp.helpers.HttpStatus;
 import efs.task.todoapp.util.TestConstants;
 import efs.task.todoapp.util.ToDoServerExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,13 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,24 +37,30 @@ public class UserEndpointTest {
                 .build();
 
         //when
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
+        var httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
         assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.CREATED);
     }
 
-    @ParameterizedTest(name = "input {0}")
-    @CsvFileSource(resources = {"/badjsonuser.csv"})
+    @ParameterizedTest(name = "user body = {0}")
+    @ValueSource(strings = {
+            "{\"username\":\"name\"}",
+            "{\"username\":\"name\",\"password\":\"\"}",
+            "{\"username\":\"\",\"password\":\"passwd\"}",
+            "{}",
+            ""
+    })
     @Timeout(1)
-    public void shouldReturnBadRequestForBadUserBodyCsv(String input) throws IOException, InterruptedException {
+    public void shouldReturnBadRequestForBadUserBody(String body) throws IOException, InterruptedException {
         // given
         var httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
-                .POST(HttpRequest.BodyPublishers.ofString(input))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
         //when
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, ofString());
+        var httpResponse = httpClient.send(httpRequest, ofString());
 
         // then
         assertThat(httpResponse.statusCode()).isEqualTo(TestConstants.BAD_REQUEST);
@@ -73,13 +77,13 @@ public class UserEndpointTest {
 
         var httpRequest2 = HttpRequest.newBuilder()
                 .uri(URI.create(TestConstants.TODO_APP_PATH + "user"))
-                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON[0] + "user"))
+                .POST(HttpRequest.BodyPublishers.ofString(TestConstants.USER_JSON[0]))
                 .build();
 
-        //when
         httpClient.send(httpRequest1, ofString());
 
-        HttpResponse<String> httpResponse2 = httpClient.send(httpRequest2, ofString());
+        //when
+        var httpResponse2 = httpClient.send(httpRequest2, ofString());
 
         // then
         assertThat(httpResponse2.statusCode()).isEqualTo(TestConstants.CONFLICT);

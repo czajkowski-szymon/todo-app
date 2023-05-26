@@ -2,6 +2,7 @@ package efs.task.todoapp.util;
 
 import efs.task.todoapp.helpers.HttpStatus;
 import efs.task.todoapp.json.JsonSerializer;
+import efs.task.todoapp.repository.TaskEntity;
 
 public class TestConstants {
     public static final int OK = HttpStatus.OK.value();
@@ -13,15 +14,19 @@ public class TestConstants {
     public static final int NOT_FOUND = HttpStatus.NOT_FOUND.value();
     public static final String TODO_APP_PATH = "http://localhost:8080/todo/";
     public static final String[] TASK_JSON =  {
-            "{\"description\": \"kup mleko\", \"due\": \"2021-06-30\"}",
-            "{\"description\": \"kup wode\"}"
+            "{\"description\": \"buy water\", \"due\": \"2021-06-30\"}",
+            "{\"description\": \"buy bread\"}"
+    };
+    public static final TaskEntity[] TASK_OBJECT = {
+            JsonSerializer.fromJsonToObject(TASK_JSON[0], TaskEntity.class),
+            JsonSerializer.fromJsonToObject(TASK_JSON[1], TaskEntity.class)
     };
     public static final String[] USER_JSON = {
-            "{\"username\": \"name\", \"password\": \"xxx\"}",
-            "{\"username\": \"name2\", \"password\": \"xxx\"}"
+            "{\"username\": \"name\", \"password\": \"passwd\"}",
+            "{\"username\": \"name2\", \"password\": \"passwd\"}"
     };
     public static final String[] USER_AUTH = {
-            "bmFtZQ==:eHh4",
-            "bmFtZTI=:eHh4"
+            "bmFtZQ==:cGFzc3dk",
+            "bmFtZTI=:cGFzc3dk"
     };
 }
